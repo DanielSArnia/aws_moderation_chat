@@ -1,0 +1,27 @@
+# Ignore Python virtual environment
+.venv/
+
+# Ignore Conda environment
+env/
+*.conda
+*.env
+
+# Ignore typical IDE configuration files
+.vscode/
+.idea/
+
+# Ignore compiled files
+__pycache__/
+*.pyc
+*.pyo
+
+*.swp
+package-lock.json
+__pycache__
+.pytest_cache
+.venv
+*.egg-info
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
