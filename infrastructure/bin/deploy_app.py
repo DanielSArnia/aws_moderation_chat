@@ -1,6 +1,6 @@
-from aws_cdk import core
-from lib.app_stack import BedrockAppStack
+import aws_cdk as core
+from lib.app_stack import ArniaChatModerationAppStack
 
 app = core.App()
-BedrockAppStack(app, "BedrockAppStack")
+ArniaChatModerationAppStack(app, "ArniaChatModerationStack")
 app.synth()

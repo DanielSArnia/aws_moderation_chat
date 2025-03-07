@@ -1,3 +1,4 @@
+from constructs import Construct
 import aws_cdk as core
 from aws_cdk import aws_lambda as lambda_
 from aws_cdk import aws_apigateway as apigateway
@@ -7,8 +8,8 @@ from aws_cdk import aws_cloudfront as cloudfront
 from aws_cdk import aws_s3_deployment as s3_deployment
 import os
 
-class BedrockAppStack(core.Stack):
-    def __init__(self, scope: core.Construct, id: str, **kwargs):
+class ArniaChatModerationAppStack(core.Stack):
+    def __init__(self, scope: Construct, id: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
         # S3 Bucket for app data 
@@ -68,17 +69,17 @@ class BedrockAppStack(core.Stack):
 
         # CloudFront Distribution for React app
         distribution = cloudfront.CloudFrontWebDistribution(self, "arnia-chat-moderation-react-app-distribution",
-            origin_configs=[{
-                's3_origin_source': cloudfront.S3OriginConfig(
+            origin_configs=[cloudfront.SourceConfiguration(
+                s3_origin_source=cloudfront.S3OriginConfig(
                     s3_bucket_source=bucket
                 ),
-                'behaviors': [{'is_default_behavior': True}],
-            }]
+                behaviors=[cloudfront.Behavior(is_default_behavior=True)],
+            )]
         )
 
         # Deploy the React app to the S3 bucket
         s3_deployment.BucketDeployment(self, "arnia-chat-moderation-react-app-deploy",
-            sources=[s3_deployment.Source.asset(os.path.join(os.path.dirname(__file__), '..', '..', 'web_app', 'chat_app', 'build'))],
+            sources=[s3_deployment.Source.asset(os.path.join(os.path.dirname(__file__), '..', '..', 'web_app', 'chat_app', 'dist'))],
             destination_bucket=bucket,
             distribution=distribution,  # Invalidate CloudFront cache on new deploy
             distribution_paths=['/', '/static/*', '/static/css/*', '/static/js/*', '/static/media/*']
