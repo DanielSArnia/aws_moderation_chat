@@ -18,6 +18,11 @@ class ArniaChatModerationAppStack(core.Stack):
 
         # # S3 Bucket for app data 
         # app_data_bucket = s3.Bucket(self, "arnia-chat-moderation-storage-backend", versioned=True)
+        # nickname_table = aws_dynamodb.Table(
+        #     self, "arnia-chat-moderation-nickname-table",
+        #     partition_key=aws_dynamodb.Attribute(name="nickname", type=aws_dynamodb.AttributeType.STRING),
+        #     removal_policy=core.RemovalPolicy.DESTROY  # Only for dev!
+        # )
 
         # IAM Role for Lambda to access Bedrock
         bedrock_role = iam.Role(self, "arnia-chat-moderation-bedrock-lamba-role",
@@ -43,6 +48,8 @@ class ArniaChatModerationAppStack(core.Stack):
             #     # "BUCKET_NAME": app_data_bucket.bucket_name
             # }
         )
+        # nickname_table.grant_read_write_data(bedrock_lambda)
+        # bedrock_lambda.add_environment("NICKNAME_TABLE", nickname_table.table_name)
 
         # API Gateway for Bedrock Lambda function
         bedrock_api = apigateway.RestApi(self, "arnia-chat-moderation-bedrock-api",
@@ -139,6 +146,16 @@ class ArniaChatModerationAppStack(core.Stack):
         #     runtime=_lambda.Runtime.PYTHON_3_9,
         # )
 
+        # Run a build script with environment variables injected into the build process
+        # Use subprocess to trigger the build script
+        react_app_path = os.path.join(os.path.dirname(__file__), '..', '..', 'web_app', 'nickname_app')
+
+        # Set environment variables (Bedrock API URL) and run the build command
+        os.environ["REACT_APP_BEDROCK_API_URL"] = bedrock_api.url
+
+        # Assuming you have 'npm run build' or 'yarn build' as the build command
+        os.system(f"cd {react_app_path} && npm run build")
+
         # CloudFront Distribution for React app
         distribution = cloudfront.Distribution(self, "arnia-chat-moderation-react-app-distribution-test",
             default_behavior=cloudfront.BehaviorOptions(
@@ -152,7 +169,7 @@ class ArniaChatModerationAppStack(core.Stack):
 
         # Deploy the React app to the S3 bucket
         s3_deployment.BucketDeployment(self, "arnia-chat-moderation-react-app-deploy-test",
-            sources=[s3_deployment.Source.asset(os.path.join(os.path.dirname(__file__), '..', '..', 'web_app', 'chat_app', 'dist'))],
+            sources=[s3_deployment.Source.asset(os.path.join(react_app_path, 'dist'))],
             destination_bucket=bucket,
             distribution=distribution,  # Invalidate CloudFront cache on new deploy
             distribution_paths=['/', '/static/*', '/static/css/*', '/static/js/*', '/static/media/*']
