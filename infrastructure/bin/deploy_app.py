@@ -1,6 +1,6 @@
 import aws_cdk as core
-from lib.app_stack import ArniaChatModerationAppStack
+from lib.app_stack import ArniaNicknameModerationAppStack
 
 app = core.App()
-ArniaChatModerationAppStack(app, "ArniaChatModerationStack")
+ArniaNicknameModerationAppStack(app, "ArniaNicknameModerationStack")
 app.synth()
