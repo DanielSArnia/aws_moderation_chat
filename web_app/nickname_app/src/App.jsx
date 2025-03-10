@@ -14,9 +14,7 @@ function App() {
       
       try {
         // Replace with your API endpoint
-        // const apiUrl = process.env.REACT_APP_BEDROCK_API_URL;
-        // const apiUrl = 'https://0m9vm2cd24.execute-api.eu-west-1.amazonaws.com/prod/check-nickname'; // Use your actual API Gateway URL here
-        const apiUrl = 'https://80oxzpkz64.execute-api.eu-west-1.amazonaws.com/prod/check-nickname'; // Use your actual API Gateway URL here
+        const apiUrl = import.meta.env.VITE_BEDROCK_API_URL + "check-nickname" ;
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
@@ -26,7 +24,7 @@ function App() {
         });
         if (response.ok) {
           const data = await response.json();
-          const processed_data = JSON.parse(data['result'])
+          const processed_data = data['result']
           // Display the response from Lambda that checks validity
           const isValid = processed_data.overall_result.valid ? 'valid' : 'invalid';
           setValidationMessage(`The nickname "${nickname}" is ${isValid}. ${processed_data.overall_result.decision_explanation}`);

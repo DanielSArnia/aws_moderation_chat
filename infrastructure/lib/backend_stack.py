@@ -10,9 +10,10 @@ from aws_cdk import aws_cloudfront_origins as origins
 from aws_cdk import aws_s3_deployment as s3_deployment
 from aws_cdk import Duration
 from aws_cdk import aws_dynamodb
+from aws_cdk import aws_ssm as ssm
 import os
 
-class ArniaNicknameModerationAppStack(core.Stack):
+class ArniaNicknameModerationBackendStack(core.Stack):
     def __init__(self, scope: Construct, id: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
@@ -135,64 +136,11 @@ class ArniaNicknameModerationAppStack(core.Stack):
             ]
         )
 
-        # # Output API Gateway URL for the Lambda function
-        core.CfnOutput(self, "BedrockApi", value=bedrock_api.url)
-
-        # TODO: This api-url has to be sent to the web build
-        # Probably building the react app here is required
-
-        # S3 Bucket for React app hosting
-        bucket = s3.Bucket(self, "arnia-nickname-moderation-react-app", 
-            versioned=True,
-            public_read_access=True,
-            block_public_access=s3.BlockPublicAccess(
-                block_public_acls=False,
-                block_public_policy=False,
-                ignore_public_acls=False,
-                restrict_public_buckets=False
-            ),
-            enforce_ssl=True,
-            website_index_document="index.html",
-            website_error_document="index.html",
-            removal_policy=core.RemovalPolicy.DESTROY
-        )
-
-        # # Lambda function (must be in us-east-1 for Lambda@Edge)
-        # auth_lambda = _lambda.Function(
-        #     self, 'arnia-nickname-moderation-authentication-lambda-edge',
-        #     code=_lambda.Code.from_asset('lambda'),
-        #     handler='auth_function.handler',
-        #     runtime=_lambda.Runtime.PYTHON_3_9,
+        # saving the api to ssm
+        # ssm.StringParameter(self, "arnia-nickname-moderation-bedrock-api-url-parameter",
+        #     parameter_name="/react_app/bedrock_api_url",
+        #     string_value=bedrock_api.url
         # )
 
-        # Run a build script with environment variables injected into the build process
-        # Use subprocess to trigger the build script
-        react_app_path = os.path.join(os.path.dirname(__file__), '..', '..', 'web_app', 'nickname_app')
-
-        # Set environment variables (Bedrock API URL) and run the build command
-        os.environ["REACT_APP_BEDROCK_API_URL"] = bedrock_api.url
-
-        # Assuming you have 'npm run build' or 'yarn build' as the build command
-        os.system(f"cd {react_app_path} && npm run build")
-
-        # CloudFront Distribution for React app
-        distribution = cloudfront.Distribution(self, "arnia-nickname-moderation-react-app-distribution",
-            default_behavior=cloudfront.BehaviorOptions(
-                origin=origins.S3BucketOrigin.with_origin_access_control(
-                    bucket, 
-                    origin_access_levels=[cloudfront.AccessLevel.READ, cloudfront.AccessLevel.READ_VERSIONED, cloudfront.AccessLevel.WRITE, cloudfront.AccessLevel.DELETE]
-                ),
-            ),
-            default_root_object='index.html'
-        )
-
-        # Deploy the React app to the S3 bucket
-        s3_deployment.BucketDeployment(self, "arnia-nickname-moderation-react-app-deploy",
-            sources=[s3_deployment.Source.asset(os.path.join(react_app_path, 'dist'))],
-            destination_bucket=bucket,
-            distribution=distribution,  # Invalidate CloudFront cache on new deploy
-            distribution_paths=['/', '/static/*', '/static/css/*', '/static/js/*', '/static/media/*']
-        )
-
-        # Output CloudFront URL for React app
-        core.CfnOutput(self, "CloudFrontURL", value=distribution.distribution_domain_name)
+        # Output API Gateway URL for the Lambda function
+        core.CfnOutput(self, "BedrockApi", value=bedrock_api.url, export_name="BedrockApi")
