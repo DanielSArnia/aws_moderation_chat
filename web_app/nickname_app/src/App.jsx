@@ -14,7 +14,9 @@ function App() {
       
       try {
         // Replace with your API endpoint
-        const apiUrl = 'https://0m9vm2cd24.execute-api.eu-west-1.amazonaws.com/prod/check-nickname'; // Use your actual API Gateway URL here
+        // const apiUrl = process.env.REACT_APP_BEDROCK_API_URL;
+        // const apiUrl = 'https://0m9vm2cd24.execute-api.eu-west-1.amazonaws.com/prod/check-nickname'; // Use your actual API Gateway URL here
+        const apiUrl = 'https://80oxzpkz64.execute-api.eu-west-1.amazonaws.com/prod/check-nickname'; // Use your actual API Gateway URL here
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
@@ -30,8 +32,7 @@ function App() {
           setValidationMessage(`The nickname "${nickname}" is ${isValid}. ${processed_data.overall_result.decision_explanation}`);
         } else {
           const errorData = await response.json();
-
-          setValidationMessage(errorData);
+          setValidationMessage(errorData['error']);
         }
       } catch (error) {
         console.error('Error:', error);

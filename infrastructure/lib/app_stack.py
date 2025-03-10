@@ -2,13 +2,13 @@ from constructs import Construct
 import aws_cdk as core
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_apigateway as apigateway
-from aws_cdk import aws_apigatewayv2_integrations
-from aws_cdk import aws_apigatewayv2
+from aws_cdk import aws_cognito as cognito
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_cloudfront as cloudfront 
 from aws_cdk import aws_cloudfront_origins as origins 
 from aws_cdk import aws_s3_deployment as s3_deployment
+from aws_cdk import Duration
 from aws_cdk import aws_dynamodb
 import os
 
@@ -18,6 +18,24 @@ class ArniaNicknameModerationAppStack(core.Stack):
 
         # # S3 Bucket for app data 
         # app_data_bucket = s3.Bucket(self, "arnia-nickname-moderation-storage-backend", versioned=True)
+        # Create Cognito User Pool
+        # user_pool = cognito.UserPool(self, "UserPool",
+        #     sign_in_aliases=cognito.SignInAliases(username=True, email=True),
+        #     self_sign_up_enabled=True,
+        #     auto_verify=cognito.AutoVerifiedAttrs(email=True)
+        # )
+
+        # # Create Cognito User Pool Client
+        # user_pool_client = user_pool.add_client("UserPoolClient",
+        #     auth_flows=cognito.AuthFlow(user_password=True)
+        # )
+
+        # # Create Cognito Authorizer
+        # cognito_authorizer = apigateway.CognitoUserPoolsAuthorizer(
+        #     self, "CognitoAuthorizer",
+        #     cognito_user_pools=[user_pool]
+        # )
+
         nickname_table = aws_dynamodb.Table(
             self, "arnia-nickname-moderation-nickname-table",
             partition_key=aws_dynamodb.Attribute(name="nickname", type=aws_dynamodb.AttributeType.STRING),
@@ -44,12 +62,13 @@ class ArniaNicknameModerationAppStack(core.Stack):
             handler="handler.handler",
             code=_lambda.Code.from_asset("lambda/bedrock"),
             role=bedrock_role,
+            timeout=Duration.minutes(3)
             # environment={
             #     # "BUCKET_NAME": app_data_bucket.bucket_name
             # }
         )
-        # nickname_table.grant_read_write_data(bedrock_lambda)
-        # bedrock_lambda.add_environment("NICKNAME_TABLE", nickname_table.table_name)
+        nickname_table.grant_read_write_data(bedrock_lambda)
+        bedrock_lambda.add_environment("NICKNAME_TABLE", nickname_table.table_name)
 
         # API Gateway for Bedrock Lambda function
         bedrock_api = apigateway.RestApi(self, "arnia-nickname-moderation-bedrock-api",
