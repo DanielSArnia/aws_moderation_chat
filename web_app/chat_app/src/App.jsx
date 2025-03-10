@@ -2,43 +2,69 @@ import { useState } from 'react';
 import './App.css';
 
 function App() {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [validationMessage, setValidationMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const sendMessage = () => {
-    if (input.trim()) {
-      setMessages([...messages, { text: input, sender: 'You' }]);
-      setInput('');
+  // Function to check nickname validity
+  const checkNickname = async () => {
+    if (nickname.trim()) {
+      setLoading(true);
+      setValidationMessage('');
+      
+      try {
+        // Replace with your API endpoint
+        const apiUrl = 'https://0m9vm2cd24.execute-api.eu-west-1.amazonaws.com/prod/check-nickname'; // Use your actual API Gateway URL here
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ nickname: nickname }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const processed_data = JSON.parse(data['result'])
+          // Display the response from Lambda that checks validity
+          const isValid = processed_data.overall_result.valid ? 'valid' : 'invalid';
+          setValidationMessage(`The nickname "${nickname}" is ${isValid}. ${processed_data.overall_result.decision_explanation}`);
+        } else {
+          const errorData = await response.json();
 
-      setTimeout(() => {
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { text: 'This is a bot response.', sender: 'Bot' },
-        ]);
-      }, 1000);
+          setValidationMessage(errorData);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        setValidationMessage('Failed to check nickname. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setValidationMessage('Please enter a nickname.');
     }
   };
 
   return (
     <>
-      <h1>Vite + React Chat</h1>
-      <div className="chat-container">
-        <div className="chat-box">
-          {messages.map((msg, index) => (
-            <div key={index} className={`message ${msg.sender.toLowerCase()}`}>
-              <strong>{msg.sender}: </strong> {msg.text}
-            </div>
-          ))}
-        </div>
-        <div className="input-container">
+      <h1>Nickname Validator</h1>
+      <div className="app-container">
+        <div className="nickname-checker">
           <input
             type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message..."
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="Enter a nickname"
           />
-          <button onClick={sendMessage}>Send</button>
+          <button onClick={checkNickname} disabled={loading}>
+            {loading ? 'Checking...' : 'Check Nickname'}
+          </button>
         </div>
+
+        {validationMessage && (
+          <div className={`validation-message ${validationMessage.includes('invalid') ? 'error' : 'success'}`}>
+            {validationMessage}
+          </div>
+        )}
       </div>
     </>
   );
