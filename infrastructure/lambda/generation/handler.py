@@ -93,20 +93,22 @@ def handler(event, context):
             max_tokens=4096,
         )
 
-        generated_nicknames = llm_response["validation_results"]
+        validated_nicknames = llm_response["validation_results"]
         filtered_nicknames = [
-            gn for gn in generated_nicknames if gn["passes_validation"] == True
+            gn for gn in validated_nicknames if gn["passes_validation"] == True
         ]
+
+        all_data_nicknames = merge_nickname_dicts(nicknames, validated_nicknames)
 
         save_to_dynamodb(
             interests=interests,
             lego_themes=lego_themes,
             age_range=age_range,
             region_code=region_code,
-            nicknames=generated_nicknames,
+            nicknames=all_data_nicknames,
         )
 
-        return build_api_response(200, json.dumps({"result": filtered_nicknames}))
+        return build_api_response(200, json.dumps({"result": all_data_nicknames}))
     except Exception as e:
         print(f"Failed to generate response: {str(e)}")
         return build_api_response(500, json.dumps({"error": str(e)}))
@@ -211,3 +213,16 @@ def build_api_response(code, json_body):
         },
         "body": json_body,
     }
+
+
+def merge_nickname_dicts(nicknames, validated_nicknames):
+    # Build a lookup dictionary for validated nicknames (assuming uniqueness on 'nickname')
+    validated_lookup = {vn['nickname']: vn for vn in validated_nicknames}
+
+    # Merge dictionaries where nicknames match
+    all_data_nicknames = [
+        {**nickname, **validated_lookup[nickname['nickname']]}
+        for nickname in nicknames
+        if nickname['nickname'] in validated_lookup
+    ]
+    return all_data_nicknames
