@@ -1,69 +1,40 @@
 import { useState } from 'react';
 import './App.css';
+import SimpleSearch from './components/SimpleSearch';
+import AdvancedSearch from './components/AdvancedSearch';
+import GenerateNickname from './components/GenerateNickname';
 
 function App() {
-  const [nickname, setNickname] = useState('');
-  const [validationMessage, setValidationMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  // Function to check nickname validity
-  const checkNickname = async () => {
-    if (nickname.trim()) {
-      setLoading(true);
-      setValidationMessage('');
-      
-      try {
-        // Replace with your API endpoint
-        const apiUrl = import.meta.env.VITE_BEDROCK_API_URL + "check-nickname" ;
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ nickname: nickname }),
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const processed_data = data['result']
-          // Display the response from Lambda that checks validity
-          const isValid = processed_data.overall_result.valid ? 'valid' : 'invalid';
-          setValidationMessage(`The nickname "${nickname}" is ${isValid}. ${processed_data.overall_result.decision_explanation}`);
-        } else {
-          const errorData = await response.json();
-          setValidationMessage(errorData['error']);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        setValidationMessage('Failed to check nickname. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setValidationMessage('Please enter a nickname.');
-    }
-  };
+  const [activeTab, setActiveTab] = useState('simple'); // Track active tab
 
   return (
     <>
       <h1>Nickname Validator</h1>
-      <div className="app-container">
-        <div className="nickname-checker">
-          <input
-            type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            placeholder="Enter a nickname"
-          />
-          <button onClick={checkNickname} disabled={loading}>
-            {loading ? 'Checking...' : 'Check Nickname'}
-          </button>
-        </div>
+      <div className="tabs">
+        <button
+          className={activeTab === 'simple' ? 'active' : ''}
+          onClick={() => setActiveTab('simple')}
+        >
+          Simple Search
+        </button>
+        <button
+          className={activeTab === 'advanced' ? 'active' : ''}
+          onClick={() => setActiveTab('advanced')}
+        >
+          Advanced Search
+        </button>
+        <button
+          className={activeTab === 'generate' ? 'active' : ''}
+          onClick={() => setActiveTab('generate')}
+        >
+          Generate Nickname
+        </button>
+      </div>
 
-        {validationMessage && (
-          <div className={`validation-message ${validationMessage.includes('invalid') ? 'error' : 'success'}`}>
-            {validationMessage}
-          </div>
-        )}
+      <div className="tab-content">
+        {activeTab === 'simple' && <SimpleSearch />}
+        {activeTab === 'advanced' && <AdvancedSearch />}
+        {activeTab === 'generate' && <GenerateNickname />}
       </div>
     </>
   );

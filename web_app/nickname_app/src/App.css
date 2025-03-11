@@ -5,70 +5,82 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
-.app-container {
+.tabs {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 50px;
-}
-
-.nickname-checker {
+  justify-content: center;
   margin-bottom: 20px;
 }
 
-input {
-  padding: 10px;
-  margin-right: 10px;
+.tabs button {
+  padding: 10px 20px;
   font-size: 16px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin: 0 10px;
+  background-color: #000000;
+  transition: background-color 0.3s;
+}
+
+.tabs button.active {
+  background-color: #0056b3;
+  color: white;
+}
+
+.tab-content {
+  margin-top: 20px;
+  max-height: 500px; /* Set a fixed height */
+  min-height: 300px; /* Set a minimum height */
+  overflow-y: auto; /* Allow scrolling if content exceeds the max height */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nickname-checker, .advanced-search, .generate-nickname {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.nickname-checker input, .advanced-search input, .generate-nickname input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 
 button {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+  background-color: #000000;
+  color: white;
+  transition: background-color 0.3s;
 }
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button:disabled {
+  background-color: #0056b3;
+  color: white;
+}
+
 
 .validation-message {
   margin-top: 20px;
   padding: 15px;
   border-radius: 5px;
-  width: 300px;
+  width: 100%;
+  max-width: 400px;
   text-align: center;
 }
 
@@ -80,4 +92,10 @@ button {
 .error {
   background-color: #f8d7da;
   color: #721c24;
+}
+
+.generated-nickname {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
 }
