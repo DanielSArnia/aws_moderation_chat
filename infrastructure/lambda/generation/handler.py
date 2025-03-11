@@ -4,7 +4,7 @@ import boto3
 from copy import deepcopy
 from decimal import Decimal
 
-from prompts import system_string, input_template
+from prompts import system_string, input_template, system_string_batch_verification, input_template_batch_verification
 
 # define bedrock client and model id
 bedrock_client = boto3.client('bedrock-runtime', region_name="eu-west-1")
@@ -12,6 +12,8 @@ model_id = "eu.anthropic.claude-3-5-sonnet-20240620-v1:0"  # Use a specific mode
 
 # Initialize DynamoDB client
 dynamodb = boto3.resource('dynamodb')
+generated_nickname_table_name = os.environ.get("GENERATED_NICKNAME_TABLE")
+generated_nickname_table = dynamodb.Table(generated_nickname_table_name)
 nickname_table_name = os.environ.get("NICKNAME_TABLE")
 nickname_table = dynamodb.Table(nickname_table_name)
 
@@ -23,45 +25,79 @@ def handler(event, context):
         else:
             body = event  # fallback for direct Lambda testing
 
-        nickname = body.get('nickname', '')
         age_range = body.get('age_range', '')
+        lego_themes = body.get('lego_themes', '')
+        interests = body.get('interests', '')
         region_code = body.get('region_code', '')
 
-        # check name availability
-        response = nickname_table.get_item(Key={'nickname': nickname})
-
-        if 'Item' in response:
-            # Nickname already exists
-            print(f"Nickname '{nickname}' already exists in the table.")
-            return build_api_response(
-                400,
-                json.dumps({
-                    "error": f"Nickname '{nickname}' already exists."
-                })
-            )
 
         # Create prompt for the model
         formatted_system_string = "".join(system_string)
         input_string = "".join(input_template)
         formatted_input_string = input_string.format(
-            nickname=nickname,
+            age_range=age_range,
+            interests=interests,
+            lego_themes=lego_themes,
+            region_code=region_code
+        )
+
+        llm_response = make_bedrock_llm_call(
+            system_string=formatted_system_string,
+            prompt_string=formatted_input_string,
+            temperature=0.7
+        )
+
+        nicknames = llm_response['nicknames']
+        filtered_nicknames = []
+
+        for nickname in nicknames:
+            # check name availability
+            response = nickname_table.get_item(Key={'nickname': nickname['nickname']})
+
+            if 'Item' in response:
+                # Nickname already exists
+                print(f"Nickname '{nickname['nickname']}' already exists in the table.")
+            else:
+                filtered_nicknames.append(nickname)
+        
+        if len(filtered_nicknames) < 0:
+            return build_api_response(
+                400,
+                json.dumps({
+                    "error": f"No new nicknames could be generated."
+                })
+            )
+        
+
+        # Create prompt for the model batch verification
+        formatted_system_string_verification = "".join(system_string_batch_verification)
+        input_string_verification = "".join(input_template_batch_verification)
+        formatted_input_string_verification = input_string_verification.format(
+            nicknames=str(filtered_nicknames),
             age_range=age_range,
             region_code=region_code
         )
 
-        llm_response = make_bedrock_llm_call(system_string=formatted_system_string, prompt_string=formatted_input_string)
+        llm_response = make_bedrock_llm_call(
+            system_string=formatted_system_string_verification,
+            prompt_string=formatted_input_string_verification,
+        )
+
+        generated_nicknames = llm_response['validation_results']
+        filtered_nicknames = [gn for gn in generated_nicknames if gn['passes_validation'] == True]
 
         save_to_dynamodb(
-            nickname=nickname,
+            interests=interests,
+            lego_themes=lego_themes,
             age_range=age_range,
             region_code=region_code,
-            llm_response=llm_response
+            nicknames=generated_nicknames
         )
 
         return build_api_response(
             200,  
             json.dumps({
-                "result": llm_response
+                "result": filtered_nicknames
             })
         )
     except Exception as e:
@@ -124,21 +160,24 @@ def make_bedrock_llm_call(system_string, prompt_string, temperature:float=0.2, m
                 raise e
     raise
 
-def save_to_dynamodb(nickname, age_range, region_code, llm_response):
+def save_to_dynamodb(lego_themes, interests, age_range, region_code, nicknames):
     """
     Save the nickname details and the LLM response to DynamoDB.
     """
     try:
-        new_object_llm_response = deepcopy(llm_response)
-        item = {
-            'nickname': nickname,  # Unique ID for each record
-            'age_range': age_range,
-            'region_code': region_code,
-            'metadata': convert_numbers_to_decimal(new_object_llm_response)
-        }
+        for original_nickname in nicknames:
+            nickname = deepcopy(original_nickname)
+            item = {
+                'nickname': nickname['nickname'],  # Unique ID for each record
+                'age_range': age_range,
+                'lego_themes': lego_themes,
+                'interests': interests,
+                'region_code': region_code,
+                'metadata': convert_numbers_to_decimal(nickname)
+            }
 
-        nickname_table.put_item(Item=item)
-        print(f"Saved item to DynamoDB: {item}")
+            generated_nickname_table.put_item(Item=item)
+            print(f"Saved item to DynamoDB: {item}")
 
     except Exception as e:
         print(f"Failed to save to DynamoDB: {str(e)}")

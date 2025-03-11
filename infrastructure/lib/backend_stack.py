@@ -42,6 +42,11 @@ class ArniaNicknameModerationBackendStack(core.Stack):
             partition_key=aws_dynamodb.Attribute(name="nickname", type=aws_dynamodb.AttributeType.STRING),
             removal_policy=core.RemovalPolicy.DESTROY  # Only for dev!
         )
+        generated_nickname_table = aws_dynamodb.Table(
+            self, "arnia-nickname-moderation-genererated-nickname-table",
+            partition_key=aws_dynamodb.Attribute(name="nickname", type=aws_dynamodb.AttributeType.STRING),
+            removal_policy=core.RemovalPolicy.DESTROY  # Only for dev!
+        )
 
         # IAM Role for Lambda to access Bedrock
         bedrock_role = iam.Role(self, "arnia-nickname-moderation-bedrock-lamba-role",
@@ -70,6 +75,35 @@ class ArniaNicknameModerationBackendStack(core.Stack):
         )
         nickname_table.grant_read_write_data(bedrock_lambda)
         bedrock_lambda.add_environment("NICKNAME_TABLE", nickname_table.table_name)
+
+        # IAM Role for Lambda to access Bedrock
+        generation_bedrock_role = iam.Role(self, "arnia-nickname-moderation-generation-bedrock-lamba-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")
+            ]
+        )
+
+        # Attach permission to invoke Bedrock model
+        generation_bedrock_role.add_to_policy(iam.PolicyStatement(
+            actions=["bedrock:InvokeModel"],
+            resources=["*"]  # Restrict this to specific models if possible
+        ))
+
+        generation_lambda = _lambda.Function(self, "arnia-nickname-generation-bedrock-lambda",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("lambda/generation"),
+            role=generation_bedrock_role,
+            timeout=Duration.minutes(3)
+            # environment={
+            #     # "BUCKET_NAME": app_data_bucket.bucket_name
+            # }
+        )
+        nickname_table.grant_read_write_data(generation_lambda)
+        generated_nickname_table.grant_read_write_data(generation_lambda)
+        generation_lambda.add_environment("NICKNAME_TABLE", nickname_table.table_name)
+        generation_lambda.add_environment("GENERATED_NICKNAME_TABLE", generated_nickname_table.table_name)
 
         # API Gateway for Bedrock Lambda function
         bedrock_api = apigateway.RestApi(self, "arnia-nickname-moderation-bedrock-api",
@@ -136,6 +170,64 @@ class ArniaNicknameModerationBackendStack(core.Stack):
             ]
         )
 
+        bedrock_resource_generate = bedrock_api.root.add_resource("generate-nickname")
+        bedrock_resource_generate.add_method(
+            "POST",
+            apigateway.LambdaIntegration(
+                generation_lambda,
+                proxy=True,
+                integration_responses=[
+                    apigateway.IntegrationResponse(
+                        status_code="200",
+                        response_parameters={
+                            "method.response.header.Access-Control-Allow-Origin": "'*'",
+                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type'",
+                            "method.response.header.Access-Control-Allow-Methods": "'POST'"
+                        }
+                    )
+                ]
+            ),
+            method_responses=[
+                apigateway.MethodResponse(
+                    status_code="200",
+                    response_parameters={
+                        "method.response.header.Access-Control-Allow-Origin": True,
+                        "method.response.header.Access-Control-Allow-Headers": True,
+                        "method.response.header.Access-Control-Allow-Methods": True
+                    }
+                )
+            ]
+        )
+
+        # OPTIONS Method (Preflight)
+        bedrock_resource_generate.add_method(
+            "OPTIONS",
+            apigateway.MockIntegration(
+                integration_responses=[apigateway.IntegrationResponse(
+                    status_code="200",
+                    response_parameters={
+                        "method.response.header.Access-Control-Allow-Headers": "'Content-Type'",
+                        "method.response.header.Access-Control-Allow-Origin": "'*'",
+                        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+                    }
+                )],
+                passthrough_behavior=apigateway.PassthroughBehavior.NEVER,
+                request_templates={
+                    "application/json": "{\"statusCode\": 200}"
+                }
+            ),
+            method_responses=[
+                apigateway.MethodResponse(
+                    status_code="200",
+                    response_parameters={
+                        "method.response.header.Access-Control-Allow-Headers": True,
+                        "method.response.header.Access-Control-Allow-Origin": True,
+                        "method.response.header.Access-Control-Allow-Methods": True
+                    }
+                )
+            ]
+        )
+
         # saving the api to ssm
         # ssm.StringParameter(self, "arnia-nickname-moderation-bedrock-api-url-parameter",
         #     parameter_name="/react_app/bedrock_api_url",
@@ -143,4 +235,4 @@ class ArniaNicknameModerationBackendStack(core.Stack):
         # )
 
         # Output API Gateway URL for the Lambda function
-        core.CfnOutput(self, "BedrockApi", value=bedrock_api.url, export_name="BedrockApi")
+        core.CfnOutput(self, "BedrockApi", value=bedrock_api.url)

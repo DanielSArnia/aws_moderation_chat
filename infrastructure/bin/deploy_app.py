@@ -12,5 +12,4 @@ backend_stack = ArniaNicknameModerationBackendStack(app, "ArniaNicknameModeratio
 # Deploy the frontend stack and pass the backend API URL
 frontend_stack = ArniaNicknameModerationFrontendStack(app, "ArniaNicknameModerationFrontendStack", react_app_path=react_app_path)
 
-
 app.synth()
