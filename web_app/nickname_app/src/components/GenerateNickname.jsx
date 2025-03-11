@@ -2,6 +2,7 @@ import { useState } from 'react';
 import RegionSelector from './ui/RegionSelector/RegionSelector';
 import AgeRangeSelector from './ui/AgeRangeSelector/AgeRangeSelector';
 import ThemeSelector from './ui/ThemeSelector/ThemeSelector';
+import GeneratedNicknameList from './ui/GeneratedNicknameList/GeneratedNicknameList';
 
 function GenerateNickname() {
   const [interests, setInterests] = useState('');
@@ -12,7 +13,7 @@ function GenerateNickname() {
   const [validationMessage, setValidationMessage] = useState('');
   const [isValid, setIsValid] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [generatedNickname, setGeneratedNickname] = useState('');
+  const [generatedNicknames, setGeneratedNicknames] = useState([]);
 
   const handleRegionChange = (newRegion) => {
     setRegion(newRegion);
@@ -52,6 +53,7 @@ function GenerateNickname() {
           const data = await response.json();
           const processed_data = data['result'];
           console.log(processed_data);
+          setGeneratedNicknames(processed_data)
           // const responseIsValid = processed_data.overall_result.valid ? 'valid' : 'invalid';
           // if (responseIsValid == 'valid') {
           //   setIsValid(true)
@@ -103,10 +105,8 @@ function GenerateNickname() {
         {loading ? 'Generating...' : 'Generate Nicknames'}
       </button>
 
-      {generatedNickname && (
-        <div className="generated-nickname">
-          <strong>Generated Nicknames: </strong>{generatedNickname}
-        </div>
+      {generatedNicknames?.length > 0 && (
+        <GeneratedNicknameList nicknames={generatedNicknames} />
       )}
       {validationMessage && (
         <div className={`validation-message ${isValid ? 'success' : 'error'}`}>

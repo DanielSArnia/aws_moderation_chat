@@ -4,32 +4,40 @@ import boto3
 from copy import deepcopy
 from decimal import Decimal
 
-from prompts import system_string, input_template, system_string_batch_verification, input_template_batch_verification
+from prompts import (
+    system_string,
+    input_template,
+    system_string_batch_verification,
+    input_template_batch_verification,
+    tool_list_generate,
+    tool_list_validate,
+)
 
 # define bedrock client and model id
-bedrock_client = boto3.client('bedrock-runtime', region_name="eu-west-1")
-model_id = "eu.anthropic.claude-3-5-sonnet-20240620-v1:0"  # Use a specific model ID from Bedrock
+bedrock_client = boto3.client("bedrock-runtime", region_name="eu-west-1")
+# model_id = "eu.anthropic.claude-3-5-sonnet-20240620-v1:0"  # Use a specific model ID from Bedrock
+model_id = "eu.anthropic.claude-3-haiku-20240307-v1:0"  # Use a specific model ID from Bedrock
 
 # Initialize DynamoDB client
-dynamodb = boto3.resource('dynamodb')
+dynamodb = boto3.resource("dynamodb")
 generated_nickname_table_name = os.environ.get("GENERATED_NICKNAME_TABLE")
 generated_nickname_table = dynamodb.Table(generated_nickname_table_name)
 nickname_table_name = os.environ.get("NICKNAME_TABLE")
 nickname_table = dynamodb.Table(nickname_table_name)
 
+
 def handler(event, context):
     try:
         # Extract nickname from event body (API Gateway sends this in 'body')
-        if 'body' in event:
-            body = json.loads(event['body'])
+        if "body" in event:
+            body = json.loads(event["body"])
         else:
             body = event  # fallback for direct Lambda testing
 
-        age_range = body.get('age_range', '')
-        lego_themes = body.get('lego_themes', '')
-        interests = body.get('interests', '')
-        region_code = body.get('region_code', '')
-
+        age_range = body.get("age_range", "")
+        lego_themes = body.get("lego_themes", "")
+        interests = body.get("interests", "")
+        region_code = body.get("region_code", "")
 
         # Create prompt for the model
         formatted_system_string = "".join(system_string)
@@ -38,36 +46,35 @@ def handler(event, context):
             age_range=age_range,
             interests=interests,
             lego_themes=lego_themes,
-            region_code=region_code
+            region_code=region_code,
         )
 
         llm_response = make_bedrock_llm_call(
             system_string=formatted_system_string,
             prompt_string=formatted_input_string,
-            temperature=0.7
+            tool_name="generate_nicknames",
+            tools=tool_list_generate,
+            temperature=0.7,
+            max_tokens=4096,
         )
 
-        nicknames = llm_response['nicknames']
+        nicknames = llm_response["nicknames"]
         filtered_nicknames = []
 
         for nickname in nicknames:
             # check name availability
-            response = nickname_table.get_item(Key={'nickname': nickname['nickname']})
+            response = nickname_table.get_item(Key={"nickname": nickname["nickname"]})
 
-            if 'Item' in response:
+            if "Item" in response:
                 # Nickname already exists
                 print(f"Nickname '{nickname['nickname']}' already exists in the table.")
             else:
                 filtered_nicknames.append(nickname)
-        
+
         if len(filtered_nicknames) < 0:
             return build_api_response(
-                400,
-                json.dumps({
-                    "error": f"No new nicknames could be generated."
-                })
+                400, json.dumps({"error": f"No new nicknames could be generated."})
             )
-        
 
         # Create prompt for the model batch verification
         formatted_system_string_verification = "".join(system_string_batch_verification)
@@ -75,83 +82,82 @@ def handler(event, context):
         formatted_input_string_verification = input_string_verification.format(
             nicknames=str(filtered_nicknames),
             age_range=age_range,
-            region_code=region_code
+            region_code=region_code,
         )
 
         llm_response = make_bedrock_llm_call(
             system_string=formatted_system_string_verification,
             prompt_string=formatted_input_string_verification,
+            tools=tool_list_validate,
+            tool_name="validate_nicknames",
+            max_tokens=4096,
         )
 
-        generated_nicknames = llm_response['validation_results']
-        filtered_nicknames = [gn for gn in generated_nicknames if gn['passes_validation'] == True]
+        generated_nicknames = llm_response["validation_results"]
+        filtered_nicknames = [
+            gn for gn in generated_nicknames if gn["passes_validation"] == True
+        ]
 
         save_to_dynamodb(
             interests=interests,
             lego_themes=lego_themes,
             age_range=age_range,
             region_code=region_code,
-            nicknames=generated_nicknames
+            nicknames=generated_nicknames,
         )
 
-        return build_api_response(
-            200,  
-            json.dumps({
-                "result": filtered_nicknames
-            })
-        )
+        return build_api_response(200, json.dumps({"result": filtered_nicknames}))
     except Exception as e:
         print(f"Failed to generate response: {str(e)}")
-        return build_api_response(
-            500,
-            json.dumps({
-                "error": str(e)
-            })
-        )
+        return build_api_response(500, json.dumps({"error": str(e)}))
 
-def make_bedrock_llm_call(system_string, prompt_string, temperature:float=0.2, max_tokens:int=500, anthropic_version:str="bedrock-2023-05-31"):
+
+def make_bedrock_llm_call(
+    system_string,
+    prompt_string,
+    tools,
+    tool_name,
+    temperature: float = 0.2,
+    max_tokens: int = 500,
+):
     # Prepare Claude-specific request payload (Anthropic format)
-    body_payload = {
-        "messages": [
-            {
-                "role": "system",
-                "content": [{
-                    "type": "text",
-                    "text": system_string
-                }],
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": prompt_string
-                    }
-                ]
-            }
+    messages = [{
+        "role": "user",
+        "content": [
+            {"text": system_string},
+            {"text": f"<instructions>\n{prompt_string}\n</instructions>\n"},
         ],
-        "max_tokens": max_tokens,
-        "temperature": temperature,
-        "anthropic_version": anthropic_version  # Required for Claude v3
-    }
+    }]
 
     retries = 0
     while retries < 5:
         try:
             # Call Bedrock runtime for inference
-            response = bedrock_client.invoke_model(
+            response = bedrock_client.converse(
                 modelId=model_id,
-                body=json.dumps(body_payload),
-                accept="application/json",
-                contentType="application/json"
+                messages=messages,
+                inferenceConfig={
+                    "maxTokens": max_tokens,
+                    "temperature": temperature,
+                },
+                toolConfig={
+                    "tools": tools,
+                    "toolChoice": {"tool": {"name": tool_name}},
+                },
+                # accept="application/json",
+                # contentType="application/json"
             )
 
-            # Read the response stream and decode it
-            response_body = json.loads(response['body'].read())
+            # Read the response stream and get the tool output
+            response_message = response["output"]["message"]
+            response_content_blocks = response_message["content"]
+            content_block = next(
+                (block for block in response_content_blocks if "toolUse" in block), None
+            )
+            tool_use_block = content_block["toolUse"]
+            tool_result_dict = tool_use_block["input"]
 
-            # Claude models return `completion` in the result
-            completion = response_body['content'][0]['text']
-
-            # Return the response as HTTP response (if triggered via API Gateway)
-            return json.loads(completion)
+            return tool_result_dict
 
         except Exception as e:
             print(f"Model failed to generate response:: {str(e)}")
@@ -159,6 +165,7 @@ def make_bedrock_llm_call(system_string, prompt_string, temperature:float=0.2, m
             if retries == 5:
                 raise e
     raise
+
 
 def save_to_dynamodb(lego_themes, interests, age_range, region_code, nicknames):
     """
@@ -168,12 +175,12 @@ def save_to_dynamodb(lego_themes, interests, age_range, region_code, nicknames):
         for original_nickname in nicknames:
             nickname = deepcopy(original_nickname)
             item = {
-                'nickname': nickname['nickname'],  # Unique ID for each record
-                'age_range': age_range,
-                'lego_themes': lego_themes,
-                'interests': interests,
-                'region_code': region_code,
-                'metadata': convert_numbers_to_decimal(nickname)
+                "nickname": nickname["nickname"],  # Unique ID for each record
+                "age_range": age_range,
+                "lego_themes": lego_themes,
+                "interests": interests,
+                "region_code": region_code,
+                "metadata": convert_numbers_to_decimal(nickname),
             }
 
             generated_nickname_table.put_item(Item=item)
@@ -182,6 +189,7 @@ def save_to_dynamodb(lego_themes, interests, age_range, region_code, nicknames):
     except Exception as e:
         print(f"Failed to save to DynamoDB: {str(e)}")
         raise e
+
 
 def convert_numbers_to_decimal(obj):
     if isinstance(obj, dict):
@@ -193,12 +201,13 @@ def convert_numbers_to_decimal(obj):
     else:
         return obj
 
+
 def build_api_response(code, json_body):
     return {
         "statusCode": code,
         "headers": {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"  # Optional for CORS
+            "Access-Control-Allow-Origin": "*",  # Optional for CORS
         },
-        "body": json_body
+        "body": json_body,
     }

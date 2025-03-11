@@ -65,3 +65,96 @@ input_template_batch_verification = (
     "  ]\n",
     "}}"
 )
+
+tool_list_validate = [
+    {
+        "toolSpec": {
+            "name": "validate_nicknames",
+            "description": "Validate a list of nicknames, providing validation results, potential issues, and risk levels.",
+            "inputSchema": {
+                "json": {
+                    "type": "object",
+                    "properties": {
+                        "validation_results": {
+                            "type": "array",
+                            "description": "A list containing validation results for each nickname.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "nickname": {
+                                        "type": "string",
+                                        "description": "The nickname being validated.",
+                                    },
+                                    "passes_validation": {
+                                        "type": "boolean",
+                                        "description": "Indicates whether the nickname passed validation checks.",
+                                    },
+                                    "issues": {
+                                        "type": "array",
+                                        "description": "A list of issues found with the nickname, or an empty list if none.",
+                                        "items": {"type": "string"},
+                                    },
+                                    "risk_level": {
+                                        "type": "string",
+                                        "description": "The assessed risk level of the nickname.",
+                                        "enum": ["none", "low", "medium", "high"],
+                                    },
+                                },
+                                "required": [
+                                    "nickname",
+                                    "passes_validation",
+                                    "issues",
+                                    "risk_level",
+                                ],
+                            },
+                        }
+                    },
+                    "required": ["validation_results"],
+                }
+            },
+        }
+    }
+]
+
+tool_list_generate = [
+    {
+        "toolSpec": {
+            "name": "generate_nicknames",
+            "description": "Generate a list of nicknames based on LEGO themes.",
+            "inputSchema": {
+                "json": {
+                    "type": "object",
+                    "properties": {
+                        "nicknames": {
+                            "type": "array",
+                            "description": "A list of nicknames generated based on LEGO themes.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "nickname": {
+                                        "type": "string",
+                                        "description": "The generated nickname.",
+                                    },
+                                    "inspiration": {
+                                        "type": "string",
+                                        "description": "A brief explanation of the inspiration for the nickname.",
+                                    },
+                                    "theme_connection": {
+                                        "type": "string",
+                                        "description": "The LEGO theme related to the nickname.",
+                                    },
+                                },
+                                "required": [
+                                    "nickname",
+                                    "inspiration",
+                                    "theme_connection",
+                                ],
+                            },
+                        }
+                    },
+                    "required": ["nicknames"],
+                }
+            },
+        }
+    }
+]

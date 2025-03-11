@@ -40,7 +40,6 @@ body {
 
 .tab-content {
   margin-top: 20px;
-  max-height: 500px; /* Set a fixed height */
   min-height: 300px; /* Set a minimum height */
   overflow-y: auto; /* Allow scrolling if content exceeds the max height */
   display: flex;

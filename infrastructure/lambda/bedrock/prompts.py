@@ -55,3 +55,163 @@ input_template = (
     "  }}\n",
     "}}\n"
 )
+
+tool_list = [
+    {
+        "toolSpec": {
+            "name": "analyze_nickname",
+            "description": "Analyze nickname for inappropriate material, personal information, brand alignment, age appropriateness, and regional compliance. Returns an overall validation result and risk level.",
+            "inputSchema": {
+                "json": {
+                    "type": "object",
+                    "properties": {
+                        "analysis": {
+                            "type": "object",
+                            "description": "Detailed analysis results for various compliance checks.",
+                            "properties": {
+                                "inappropriate_content": {
+                                    "type": "object",
+                                    "description": "Evaluation of inappropriate content.",
+                                    "properties": {
+                                        "score": {
+                                            "type": "number",
+                                            "description": "Score between 0 and 1; lower is better.",
+                                            "minimum": 0,
+                                            "maximum": 1,
+                                        },
+                                        "pass": {
+                                            "type": "boolean",
+                                            "description": "Whether the nickname passed the inappropriate content check.",
+                                        },
+                                        "explanation": {
+                                            "type": "string",
+                                            "description": "Explanation for the inappropriate content decision.",
+                                        },
+                                    },
+                                    "required": ["score", "pass", "explanation"],
+                                },
+                                "personal_information": {
+                                    "type": "object",
+                                    "description": "Evaluation of personal information presence.",
+                                    "properties": {
+                                        "score": {
+                                            "type": "number",
+                                            "description": "Score between 0 and 1; lower is better.",
+                                            "minimum": 0,
+                                            "maximum": 1,
+                                        },
+                                        "pass": {
+                                            "type": "boolean",
+                                            "description": "Whether the nickname passed the personal information check.",
+                                        },
+                                        "explanation": {
+                                            "type": "string",
+                                            "description": "Explanation for the personal information decision.",
+                                        },
+                                    },
+                                    "required": ["score", "pass", "explanation"],
+                                },
+                                "brand_alignment": {
+                                    "type": "object",
+                                    "description": "Evaluation of brand alignment.",
+                                    "properties": {
+                                        "score": {
+                                            "type": "number",
+                                            "description": "Score between 0 and 1; higher is better.",
+                                            "minimum": 0,
+                                            "maximum": 1,
+                                        },
+                                        "pass": {
+                                            "type": "boolean",
+                                            "description": "Whether the nickname aligns with the brand.",
+                                        },
+                                        "explanation": {
+                                            "type": "string",
+                                            "description": "Explanation for the brand alignment decision.",
+                                        },
+                                    },
+                                    "required": ["score", "pass", "explanation"],
+                                },
+                                "age_appropriate": {
+                                    "type": "object",
+                                    "description": "Evaluation of age appropriateness.",
+                                    "properties": {
+                                        "score": {
+                                            "type": "number",
+                                            "description": "Score between 0 and 1; higher is better.",
+                                            "minimum": 0,
+                                            "maximum": 1,
+                                        },
+                                        "pass": {
+                                            "type": "boolean",
+                                            "description": "Whether the nickname is appropriate for the target age group.",
+                                        },
+                                        "explanation": {
+                                            "type": "string",
+                                            "description": "Explanation for the age appropriateness decision.",
+                                        },
+                                    },
+                                    "required": ["score", "pass", "explanation"],
+                                },
+                                "regional_compliance": {
+                                    "type": "object",
+                                    "description": "Evaluation of regional compliance.",
+                                    "properties": {
+                                        "pass": {
+                                            "type": "boolean",
+                                            "description": "Whether the nickname complies with regional regulations.",
+                                        },
+                                        "explanation": {
+                                            "type": "string",
+                                            "description": "Explanation for the regional compliance decision.",
+                                        },
+                                    },
+                                    "required": ["pass", "explanation"],
+                                },
+                            },
+                            "required": [
+                                "inappropriate_content",
+                                "personal_information",
+                                "brand_alignment",
+                                "age_appropriate",
+                                "regional_compliance",
+                            ],
+                        },
+                        "overall_result": {
+                            "type": "object",
+                            "description": "Summary of the overall validation and risk assessment.",
+                            "properties": {
+                                "valid": {
+                                    "type": "boolean",
+                                    "description": "Indicates if the nickname passed all checks.",
+                                },
+                                "confidence": {
+                                    "type": "number",
+                                    "description": "Confidence score between 0 and 1.",
+                                    "minimum": 0,
+                                    "maximum": 1,
+                                },
+                                "decision_explanation": {
+                                    "type": "string",
+                                    "description": "Explanation for the overall validation decision.",
+                                },
+                                "risk_level": {
+                                    "type": "string",
+                                    "description": "Overall risk level associated with the nickname.",
+                                    "enum": ["none", "low", "medium", "high"],
+                                },
+                            },
+                            "required": [
+                                "valid",
+                                "confidence",
+                                "decision_explanation",
+                                "risk_level",
+                            ],
+                        },
+                    },
+                    "required": ["analysis", "overall_result"],
+                }
+            },
+        }
+    }
+]
