@@ -1,0 +1,63 @@
+h1 {
+    text-align: center;
+    font-size: 24px;
+    color: #0077cc;
+    margin-bottom: 20px;
+}
+
+.lego-theme-selector {
+    margin-bottom: 20px;
+}
+
+h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.theme-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    /* Two equal columns */
+    gap: 15px;
+    justify-items: stretch;
+}
+
+.theme-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: #000000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.theme-button:hover {
+    background-color: #3a3232;
+}
+
+.theme-button.selected {
+    background-color: #0077cc;
+    color: #fff;
+    border-color: #0077cc;
+}
+
+.selected-themes-container {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.selected-themes-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.selected-theme-item {
+    font-size: 18px;
+    margin: 5px 0;
+    padding: 5px;
+    background-color: #0077cc;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}

@@ -4,6 +4,17 @@
   padding: 2rem;
   text-align: center;
 }
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+body {
+  display: flex;
+  justify-content: center;  /* horizontally center (optional) */
+  align-items: flex-start;  /* align items at the top */
+  min-height: 100vh;        /* full screen height */
+}
 
 .tabs {
   display: flex;

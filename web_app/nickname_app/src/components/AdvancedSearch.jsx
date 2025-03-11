@@ -1,12 +1,24 @@
 import { useState } from 'react';
+import RegionSelector from './ui/RegionSelector/RegionSelector';
+import AgeRangeSelector from './ui/AgeRangeSelector/AgeRangeSelector';
 
 function AdvancedSearch() {
   const [nickname, setNickname] = useState('');
-  const [region, setRegion] = useState('');
-  const [ageRange, setAgeRange] = useState('');
+  const [region, setRegion] = useState("Denmark",);
+  const [ageRange, setAgeRange] = useState("3-5 years",);
   const [validationMessage, setValidationMessage] = useState('');
   const [isValid, setIsValid] = useState(true);
   const [loading, setLoading] = useState(false);
+
+  const handleRegionChange = (newRegion) => {
+    setRegion(newRegion);
+    console.log("Selected region:", newRegion); // or do something useful!
+  };
+
+  const handleAgeRangeChange = (newRange) => {
+    setAgeRange(newRange);
+    console.log("Selected age range:", newRange);
+  };
 
   const checkNickname = async () => {
     if (nickname.trim() && region.trim() && ageRange.trim()) {
@@ -60,17 +72,13 @@ function AdvancedSearch() {
         onChange={(e) => setNickname(e.target.value)}
         placeholder="Enter a nickname"
       />
-      <input
-        type="text"
-        value={region}
-        onChange={(e) => setRegion(e.target.value)}
-        placeholder="Enter region"
+      <AgeRangeSelector
+        selectedAgeRange={ageRange}
+        onAgeRangeChange={handleAgeRangeChange}
       />
-      <input
-        type="text"
-        value={ageRange}
-        onChange={(e) => setAgeRange(e.target.value)}
-        placeholder="Enter age range"
+      <RegionSelector
+        selectedRegion={region}
+        onRegionChange={handleRegionChange}
       />
       <button onClick={checkNickname} disabled={loading}>
         {loading ? 'Checking...' : 'Check Nickname'}
