@@ -358,7 +358,7 @@ Incorporating user feedback for problematic or false-positive cases would allow 
 
 - **Resource Sizing**: Lambda function memory optimization. Right-sizing Lambda functions could reduce costs while maintaining performance.
 
-### 8. **Maintainability**
+### 6. **Maintainability**
 
 - **Testing**: No automated tests for the Lambda functions or frontend components.
 
