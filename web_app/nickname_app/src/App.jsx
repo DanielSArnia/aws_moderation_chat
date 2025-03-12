@@ -1,42 +1,31 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
-import SimpleSearch from './components/SimpleSearch';
-import AdvancedSearch from './components/AdvancedSearch';
-import GenerateNickname from './components/GenerateNickname';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import SignUp from './pages/SignUp/SignUpPage';
+import MainPage from './pages/MainPage/MainPage';
+import LoginPage from './pages/LoginPage/LoginPage';
+import PrivateRoute from './components/PrivateRoute';
+import ConfirmSignUp from './pages/ConfirmSignUpPage/ConfirmSignUpPage';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('simple'); // Track active tab
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   return (
     <>
+    <div>
       <h1>Nickname Validator</h1>
-      <div className="tabs">
-        <button
-          className={activeTab === 'simple' ? 'active' : ''}
-          onClick={() => setActiveTab('simple')}
-        >
-          Simple Search
-        </button>
-        <button
-          className={activeTab === 'advanced' ? 'active' : ''}
-          onClick={() => setActiveTab('advanced')}
-        >
-          Advanced Search
-        </button>
-        <button
-          className={activeTab === 'generate' ? 'active' : ''}
-          onClick={() => setActiveTab('generate')}
-        >
-          Generate Nickname
-        </button>
-      </div>
-
-      <div className="tab-content">
-        {activeTab === 'simple' && <SimpleSearch />}
-        {activeTab === 'advanced' && <AdvancedSearch />}
-        {activeTab === 'generate' && <GenerateNickname />}
-      </div>
-    </>
+      <Routes> {/* Define routes for the pages */}
+          <Route path="/" element={
+              <PrivateRoute>
+                <MainPage />
+              </PrivateRoute>
+            } />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/confirm-signup" element={<ConfirmSignUp />} />
+      </Routes>
+    </div>
+  </>
   );
 }
 

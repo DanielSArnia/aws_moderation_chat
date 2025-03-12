@@ -1,0 +1,71 @@
+.signup-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form input {
+  padding: 12px;
+  /* Slightly more padding */
+  margin-bottom: 10px;
+  margin-left: 10px;
+  border-radius: 6px;
+  /* More rounded corners */
+  border: 1px solid #555;
+  /* Darker border for contrast on dark backgrounds */
+  background-color: #222;
+  /* Dark background to match the theme */
+  color: #eee;
+  /* Light text for readability */
+  font-size: 14px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form input:focus {
+  border-color: #1e90ff;
+  /* Bright blue border on focus */
+  box-shadow: 0 0 5px rgba(30, 144, 255, 0.7);
+  outline: none;
+}
+
+.error {
+  color: red;
+}
+
+.confirmation p {
+  margin-bottom: 10px;
+}
+
+.links {
+  margin-top: 5px;
+}
+
+.links button {
+  margin-top: 5px;
+  padding: 6px 12px;
+  /* Smaller padding makes the button smaller */
+  font-size: 12px;
+  /* Slightly smaller text */
+  width: 60%;
+  background-color: #111;
+  /* Darker background to differentiate */
+  color: #ccc;
+  /* Light grey text */
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.links button:hover {
+  background-color: #333;
+}

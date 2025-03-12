@@ -41,6 +41,7 @@ function GenerateNickname() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('idToken')
           },
           body: JSON.stringify({ 
             interests:interests, 
