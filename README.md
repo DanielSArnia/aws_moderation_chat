@@ -227,7 +227,7 @@ VITE_USER_POOL_CLIENT_ID=dnboeaj82649jo3hs028grjl4
 VITE_AWS_REGION=eu-west-1
 ```
 
-Make sure to replace the values with your actual outputs from Step 1.
+Make sure to replace the values with your actual outputs from [Step 2](#2-deploying-the-backend).
 
 ## 4. Deploying the Frontend
 
