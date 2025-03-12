@@ -20,22 +20,34 @@ class ArniaNicknameModerationBackendStack(core.Stack):
         # # S3 Bucket for app data 
         # app_data_bucket = s3.Bucket(self, "arnia-nickname-moderation-storage-backend", versioned=True)
         # Create Cognito User Pool
-        # user_pool = cognito.UserPool(self, "UserPool",
-        #     sign_in_aliases=cognito.SignInAliases(username=True, email=True),
-        #     self_sign_up_enabled=True,
-        #     auto_verify=cognito.AutoVerifiedAttrs(email=True)
-        # )
+        user_pool = cognito.UserPool(self, "arnia-nickname-moderation-user-pool",
+            sign_in_aliases=cognito.SignInAliases(email=True),
+            auto_verify=cognito.AutoVerifiedAttrs(email=True),
+            self_sign_up_enabled=True,
+            password_policy=cognito.PasswordPolicy(
+                min_length=8,
+                require_lowercase=True,
+                require_uppercase=True,
+                require_digits=True,
+                require_symbols=False
+            ),
+            account_recovery=cognito.AccountRecovery.EMAIL_ONLY
+        )
 
-        # # Create Cognito User Pool Client
-        # user_pool_client = user_pool.add_client("UserPoolClient",
-        #     auth_flows=cognito.AuthFlow(user_password=True)
-        # )
+        # Create Cognito User Pool Client
+        user_pool_client = user_pool.add_client("arnia-nickname-moderation-user-pool-client",
+            generate_secret=False,
+            auth_flows=cognito.AuthFlow(
+                user_password=True,
+                user_srp=True
+            )
+        )
 
-        # # Create Cognito Authorizer
-        # cognito_authorizer = apigateway.CognitoUserPoolsAuthorizer(
-        #     self, "CognitoAuthorizer",
-        #     cognito_user_pools=[user_pool]
-        # )
+        # Create Cognito Authorizer
+        cognito_authorizer = apigateway.CognitoUserPoolsAuthorizer(
+            self, "arnia-nickname-moderation-cognito-authorizer",
+            cognito_user_pools=[user_pool]
+        )
 
         nickname_table = aws_dynamodb.Table(
             self, "arnia-nickname-moderation-nickname-table",
@@ -123,12 +135,14 @@ class ArniaNicknameModerationBackendStack(core.Stack):
                         status_code="200",
                         response_parameters={
                             "method.response.header.Access-Control-Allow-Origin": "'*'",
-                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type'",
+                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
                             "method.response.header.Access-Control-Allow-Methods": "'POST'"
                         }
                     )
                 ]
             ),
+            authorization_type=apigateway.AuthorizationType.COGNITO,
+            authorizer=cognito_authorizer,
             method_responses=[
                 apigateway.MethodResponse(
                     status_code="200",
@@ -148,7 +162,7 @@ class ArniaNicknameModerationBackendStack(core.Stack):
                 integration_responses=[apigateway.IntegrationResponse(
                     status_code="200",
                     response_parameters={
-                        "method.response.header.Access-Control-Allow-Headers": "'Content-Type'",
+                        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
                         "method.response.header.Access-Control-Allow-Origin": "'*'",
                         "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
                     }
@@ -181,12 +195,14 @@ class ArniaNicknameModerationBackendStack(core.Stack):
                         status_code="200",
                         response_parameters={
                             "method.response.header.Access-Control-Allow-Origin": "'*'",
-                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type'",
+                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
                             "method.response.header.Access-Control-Allow-Methods": "'POST'"
                         }
                     )
                 ]
             ),
+            authorization_type=apigateway.AuthorizationType.COGNITO,
+            authorizer=cognito_authorizer,
             method_responses=[
                 apigateway.MethodResponse(
                     status_code="200",
@@ -206,7 +222,7 @@ class ArniaNicknameModerationBackendStack(core.Stack):
                 integration_responses=[apigateway.IntegrationResponse(
                     status_code="200",
                     response_parameters={
-                        "method.response.header.Access-Control-Allow-Headers": "'Content-Type'",
+                        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization'",
                         "method.response.header.Access-Control-Allow-Origin": "'*'",
                         "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
                     }
@@ -236,3 +252,5 @@ class ArniaNicknameModerationBackendStack(core.Stack):
 
         # Output API Gateway URL for the Lambda function
         core.CfnOutput(self, "BedrockApi", value=bedrock_api.url)
+        core.CfnOutput(self, "userPoolId", value=user_pool.user_pool_id)
+        core.CfnOutput(self, "userPoolClientId", value=user_pool_client.user_pool_client_id)
