@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import Popup from './ui/PopUp/PopUp';
 
 function SimpleSearch() {
   const [nickname, setNickname] = useState('');
   const [validationMessage, setValidationMessage] = useState('');
+  const [responseData, setResponseData] = useState({});
   const [isValid, setIsValid] = useState(true);
   const [loading, setLoading] = useState(false);
 
@@ -11,6 +13,7 @@ function SimpleSearch() {
     if (nickname.trim()) {
       setLoading(true);
       setValidationMessage('');
+      setResponseData({});
       
       try {
         const apiUrl = import.meta.env.VITE_BEDROCK_API_URL + "check-nickname";
@@ -26,6 +29,7 @@ function SimpleSearch() {
           const data = await response.json();
           const processed_data = data['result'];
           console.log(processed_data);
+          setResponseData(processed_data);
           const responseIsValid = processed_data.overall_result.valid ? 'valid' : 'invalid';
           if (responseIsValid == 'valid') {
             setIsValid(true)
@@ -65,9 +69,12 @@ function SimpleSearch() {
       </button>
 
       {validationMessage && (
-        <div className={`validation-message ${isValid ? 'success' : 'error'}`}>
-          {validationMessage}
-        </div>
+        <>
+          <div className={`validation-message ${isValid ? 'success' : 'error'}`}>
+            {validationMessage}
+          </div>
+          <Popup data={responseData} />
+        </>
       )}
     </div>
   );

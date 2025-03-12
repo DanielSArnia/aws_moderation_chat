@@ -12,6 +12,20 @@ const Popup = ({ data }) => {
     setShow(false); // Hide the modal
   };
 
+  // Helper function to safely get a key's value or fallback to string
+  const safeGet = (obj, path, defaultValue = "N/A") => {
+    const keys = path.split(".");
+    let result = obj;
+    for (let key of keys) {
+      if (result && result[key] !== undefined) {
+        result = result[key];
+      } else {
+        return defaultValue; // Return the default value if the key doesn't exist
+      }
+    }
+    return result;
+  };
+
   const renderScoreCard = (title, score, pass, explanation) => (
     <div className="score-card">
       <h3>{title}</h3>
@@ -24,10 +38,10 @@ const Popup = ({ data }) => {
   const renderOverallResult = (result) => (
     <div className="overall-result">
       <h3>Overall Result</h3>
-      <p><strong>Valid:</strong> {result.valid ? "Yes" : "No"}</p>
-      <p><strong>Confidence:</strong> {result.confidence}</p>
-      <p><strong>Risk Level:</strong> {result.risk_level}</p>
-      <p><strong>Decision Explanation:</strong> {result.decision_explanation}</p>
+      <p><strong>Valid:</strong> {safeGet(result, "valid") ? "Yes" : "No"}</p>
+      <p><strong>Confidence:</strong> {safeGet(result, "confidence")}</p>
+      <p><strong>Risk Level:</strong> {safeGet(result, "risk_level")}</p>
+      <p><strong>Decision Explanation:</strong> {safeGet(result, "decision_explanation")}</p>
     </div>
   );
 
@@ -49,45 +63,45 @@ const Popup = ({ data }) => {
             {/* Render Inappropriate Content Score */}
             {renderScoreCard(
               "Inappropriate Content",
-              data.analysis.inappropriate_content.score,
-              data.analysis.inappropriate_content.pass,
-              data.analysis.inappropriate_content.explanation
+              safeGet(data, "analysis.inappropriate_content.score"),
+              safeGet(data, "analysis.inappropriate_content.pass"),
+              safeGet(data, "analysis.inappropriate_content.explanation")
             )}
 
             {/* Render Personal Information Score */}
             {renderScoreCard(
               "Personal Information",
-              data.analysis.personal_information.score,
-              data.analysis.personal_information.pass,
-              data.analysis.personal_information.explanation
+              safeGet(data, "analysis.personal_information.score"),
+              safeGet(data, "analysis.personal_information.pass"),
+              safeGet(data, "analysis.personal_information.explanation")
             )}
 
             {/* Render Brand Alignment Score */}
             {renderScoreCard(
               "Brand Alignment",
-              data.analysis.brand_alignment.score,
-              data.analysis.brand_alignment.pass,
-              data.analysis.brand_alignment.explanation
+              safeGet(data, "analysis.brand_alignment.score"),
+              safeGet(data, "analysis.brand_alignment.pass"),
+              safeGet(data, "analysis.brand_alignment.explanation")
             )}
 
             {/* Render Age Appropriate Score */}
             {renderScoreCard(
               "Age Appropriate",
-              data.analysis.age_appropriate.score,
-              data.analysis.age_appropriate.pass,
-              data.analysis.age_appropriate.explanation
+              safeGet(data, "analysis.age_appropriate.score"),
+              safeGet(data, "analysis.age_appropriate.pass"),
+              safeGet(data, "analysis.age_appropriate.explanation")
             )}
 
             {/* Render Regional Compliance */}
             {renderScoreCard(
               "Regional Compliance",
               "N/A", // No score for compliance
-              data.analysis.regional_compliance.pass,
-              data.analysis.regional_compliance.explanation
+              safeGet(data, "analysis.regional_compliance.pass"),
+              safeGet(data, "analysis.regional_compliance.explanation")
             )}
 
             {/* Render Overall Result */}
-            {renderOverallResult(data.overall_result)}
+            {renderOverallResult(safeGet(data, "overall_result"))}
           </div>
         </div>
       )}

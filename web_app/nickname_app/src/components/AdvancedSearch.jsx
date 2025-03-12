@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import RegionSelector from './ui/RegionSelector/RegionSelector';
 import AgeRangeSelector from './ui/AgeRangeSelector/AgeRangeSelector';
+import Popup from './ui/PopUp/PopUp';
 
 function AdvancedSearch() {
   const [nickname, setNickname] = useState('');
   const [region, setRegion] = useState("Denmark",);
   const [ageRange, setAgeRange] = useState("3-5 years",);
+  const [responseData, setResponseData] = useState({});
   const [validationMessage, setValidationMessage] = useState('');
   const [isValid, setIsValid] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -24,6 +26,7 @@ function AdvancedSearch() {
     if (nickname.trim() && region.trim() && ageRange.trim()) {
       setLoading(true);
       setValidationMessage('');
+      setResponseData({});
       
       try {
         const apiUrl = import.meta.env.VITE_BEDROCK_API_URL + "check-nickname";
@@ -38,6 +41,7 @@ function AdvancedSearch() {
         if (response.ok) {
           const data = await response.json();
           const processed_data = data['result'];
+          setResponseData(processed_data);
           console.log(processed_data);
           const responseIsValid = processed_data.overall_result.valid ? 'valid' : 'invalid';
           if (responseIsValid == 'valid') {
@@ -86,9 +90,12 @@ function AdvancedSearch() {
       </button>
 
       {validationMessage && (
-        <div className={`validation-message ${isValid ? 'success' : 'error'}`}>
-          {validationMessage}
-        </div>
+        <>
+          <div className={`validation-message ${isValid ? 'success' : 'error'}`}>
+            {validationMessage}
+          </div>
+          <Popup data={responseData} />
+        </>
       )}
     </div>
   );
