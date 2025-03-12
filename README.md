@@ -1,4 +1,52 @@
-# Aws Moderation Chat POC test
+# Aws Nickname Validation POC
+
+## Overview
+This application is designed to **generate** and **validate** nicknames for a **LEGO-based platform**, ensuring they are creative, appropriate, and compliant with global regulations. The system leverages **Large Language Models (LLMs)** to both create and evaluate nicknames while strictly adhering to **COPPA**, **GDPR**, and other relevant data privacy and child protection laws.
+
+![Project Diagram](assets/project_diagram.png)
+
+## Key Features
+- 🚀 **Nickname Generation**  
+  Uses LLMs to create fun, safe, and engaging nicknames suitable for users of all ages, particularly children.
+
+- 🛡️ **Validation Engine**  
+  - Validates **user-submitted nicknames**.  
+  - Validates **LLM-generated nicknames**.  
+  - Ensures compliance with LEGO’s platform guidelines, including restrictions on language, personal information, and appropriateness.
+
+- ⚖️ **Regulatory Compliance**  
+  - Adheres to **COPPA** (Children's Online Privacy Protection Act) regulations to protect children’s privacy.  
+  - Complies with **GDPR** (General Data Protection Regulation) standards for data privacy and security.  
+  - Filters out any personally identifiable information (PII), offensive language, or inappropriate content.
+
+- ⚙️ **Customizable Ruleset**  
+  Validation logic can be adjusted to fit additional platform guidelines or regional compliance requirements.
+
+## Purpose
+The goal of this application is to provide a **safe and fun user experience** by ensuring that all nicknames are appropriate for a **child-friendly online environment**, such as LEGO’s digital platforms. By integrating AI-powered generation with robust validation, the system guarantees both creativity and safety.
+
+## Technology Stack
+
+- **Frontend**:  
+  - React + Vite  
+  - Deployed via **AWS S3** + **CloudFront** for scalable and secure web delivery  
+  - User authentication powered by **AWS Cognito**
+
+- **Backend**:  
+  - Python (AWS Lambda functions)  
+  - Exposed through **AWS API Gateway**  
+  - Serverless architecture for efficient and scalable backend processing
+
+- **AI/ML**:  
+  - **AWS Bedrock** for scalable LLM-powered nickname generation and validation  
+  - Calls to Large Language Models (LLMs) for generating creative, compliant nicknames and performing advanced validation
+
+- **Compliance Framework**:  
+  - Custom validation logic enforcing **COPPA**, **GDPR**, and LEGO-specific rules  
+  - Filters to ensure no PII, inappropriate language, or rule violations are present in nicknames
+
+- **Infrastructure & Deployment**:  
+  - Infrastructure-as-Code (IaC) with AWS CDK 
 
 ## Prerequirements
 
@@ -68,12 +116,17 @@ Given the following outputs:
 Outputs:
 ArniaNicknameModerationBackendStack.BedrockApi = https://m8aenb09e8.execute-api.eu-west-1.amazonaws.com/prod/
 ArniaNicknameModerationBackendStack.arnianicknamemoderationbedrockapiEndpoint17D97578 = https://m8aenb09e8.execute-api.eu-west-1.amazonaws.com/prod/
+ArniaNicknameModerationBackendStack.userPoolClientId = dnboeaj82649jo3hs028grjl4
+ArniaNicknameModerationBackendStack.userPoolId = eu-west-1_Pgq8zS6v3
 ```
 
 Example of .env file with filled out variables:
 
 ```
 VITE_BEDROCK_API_URL=https://m8aenb09e8.execute-api.eu-west-1.amazonaws.com/prod/
+VITE_USER_POOL_ID=eu-west-1_Pgq8zS6v3
+VITE_USER_POOL_CLIENT_ID=dnboeaj82649jo3hs028grjl4
+VITE_AWS_REGION=eu-west-1
 ```
 
 ### 3. Deploying the website
