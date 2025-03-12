@@ -8,9 +8,10 @@
 4. [Technology Stack](#technology-stack)
 5. [Prerequisites](#prerequisites)
 6. [Deploying the Application](#deploying-the-application)
+7. [Future refinements](#future-refinements)
 
 ## Overview
-This application is designed to **generate** and **validate** nicknames for a **LEGO-based platform**, ensuring they are creative, appropriate, and compliant with global regulations. The system leverages **Large Language Models (LLMs)** to both create and evaluate nicknames while strictly adhering to **COPPA**, **GDPR**, and other relevant data privacy and child protection laws.
+This application is designed to **generate** and **validate** nicknames for a **child-based platform**, ensuring they are creative, appropriate, and compliant with global regulations. The system leverages **Large Language Models (LLMs)** to both create and evaluate nicknames while strictly adhering to **COPPA**, **GDPR**, and other relevant data privacy and child protection laws.
 
 ![Project Diagram](assets/project_diagram.png)
 
@@ -21,7 +22,7 @@ This application is designed to **generate** and **validate** nicknames for a **
 - **Validation Engine**  
   - Validates **user-submitted nicknames**.  
   - Validates **LLM-generated nicknames**.  
-  - Ensures compliance with LEGO’s platform guidelines, including restrictions on language, personal information, and appropriateness.
+  - Ensures compliance with a child platform guidelines, including restrictions on language, personal information, and appropriateness.
 
 - **Regulatory Compliance**  
   - Adheres to **COPPA** (Children's Online Privacy Protection Act) regulations to protect children’s privacy.  
@@ -32,7 +33,7 @@ This application is designed to **generate** and **validate** nicknames for a **
   Validation logic can be adjusted to fit additional platform guidelines or regional compliance requirements.
 
 ## Purpose
-The goal of this application is to provide a **safe and fun user experience** by ensuring that all nicknames are appropriate for a **child-friendly online environment**, such as LEGO’s digital platforms. By integrating AI-powered generation with robust validation, the system guarantees both creativity and safety.
+The goal of this application is to provide a **safe and fun user experience** by ensuring that all nicknames are appropriate for a **child-friendly online environment**. By integrating AI-powered generation with robust validation, the system guarantees both creativity and safety.
 
 ## Technology Stack
 
@@ -51,7 +52,7 @@ The goal of this application is to provide a **safe and fun user experience** by
   - Calls to Large Language Models (LLMs) for generating creative, compliant nicknames and performing advanced validation
 
 - **Compliance Framework**:  
-  - Custom validation logic enforcing **COPPA**, **GDPR**, and LEGO-specific rules  
+  - Custom validation logic enforcing **COPPA**, **GDPR**, and other child specific rules  
   - Filters to ensure no PII, inappropriate language, or rule violations are present in nicknames
 
 - **Infrastructure & Deployment**:  
@@ -252,3 +253,37 @@ If you encounter any issues:
 - Verify the `.env` variables are correctly set in the frontend.
 - Check the AWS CloudFormation console for the status of your stacks.
 - Review the CDK deployment logs for any errors.
+
+## Future Refinements
+
+While the current system is functional, there are several areas where improvements could be made to enhance both the robustness and flexibility of the nickname generation and validation process. Below are some potential refinements to consider:
+
+### 1. **Improving Validation with Embeddings Distance**
+
+To improve the accuracy and safety of nickname validation, adding an **embeddings distance** verification step could be beneficial. By storing a list of previously flagged or bad names in **DynamoDB**, we can compare new nicknames to these stored entries using embeddings distance. This would allow the system to detect nicknames that are semantically similar to inappropriate names, even if they are not exact matches.
+
+**Implementation Steps:**
+- Store problematic nicknames in DynamoDB, alongside their embeddings generated using a pre-trained model.
+- For each new nickname submitted for validation, compute its embedding and compare it with embeddings in the DynamoDB database.
+- Use a threshold distance metric (e.g., cosine similarity) to determine whether the new nickname is too similar to any flagged nickname.
+
+### 2. **Specialized Prompts for High-Risk Nicknames**
+
+For certain edge cases, especially when the nickname is deemed "high-risk" but still technically valid, specialized prompts can be used to evaluate the content more rigorously. This could involve tweaking the LLM's generation prompts to focus on specific concerns, such as:
+- **Potentially offensive content**: If the nickname includes certain sensitive keywords or patterns, the model can be prompted to assess if the nickname might be interpreted negatively in specific cultures or languages.
+- **Compliance checks**: If a nickname might violate certain child protection laws or privacy regulations (like GDPR or COPPA), specialized prompts can trigger additional checks or automatic rejections.
+
+**Implementation Steps:**
+- Identify high-risk patterns in the nickname.
+- Modify the LLM prompt dynamically based on the risk factors associated with the nickname (e.g., incorporating context from child protection regulations or offensive language filters).
+- If a nickname passes the initial validation but still falls within the high-risk category, the model should return a confidence score or flag for manual review.
+
+### 3. **Enhanced Customizable Validation Rules**
+
+To provide more flexibility for different platforms or regional regulations, further refinement of the validation engine can allow for **customizable validation rules** based on:
+- **Regional regulations**: Customize validation rules to align with local legal requirements for children’s online privacy and safety (e.g., stricter filters in certain regions).
+- **Platform-specific guidelines**: Enable configuration options for the platform owner to adjust nickname guidelines based on internal policies, such as avoiding specific themes or keywords.
+
+### 4. **User Feedback and Iterative Improvement**
+
+Incorporating user feedback for problematic or false-positive cases would allow continuous improvement of the system. By collecting feedback from users and administrators on the accuracy of the nickname validation process, the system can evolve to better understand context and improve decision-making.
