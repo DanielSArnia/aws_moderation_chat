@@ -1,5 +1,14 @@
 # Aws Nickname Validation POC
 
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Key Features](#key-features)
+3. [Purpose](#purpose)
+4. [Technology Stack](#technology-stack)
+5. [Prerequisites](#prerequisites)
+6. [Deploying the Application](#deploying-the-application)
+
 ## Overview
 This application is designed to **generate** and **validate** nicknames for a **LEGO-based platform**, ensuring they are creative, appropriate, and compliant with global regulations. The system leverages **Large Language Models (LLMs)** to both create and evaluate nicknames while strictly adhering to **COPPA**, **GDPR**, and other relevant data privacy and child protection laws.
 
@@ -123,7 +132,7 @@ To set up the frontend, follow these steps:
 
    This command will install the dependencies listed in the `package.json` file.
 
-4. **Check that everything is setup properly**:  
+4. **Check that everything is set up properly**:  
    After the installation is complete, check the project is bulding:  
    `npm run build`
 
@@ -140,13 +149,44 @@ This section outlines the steps required to deploy both the **backend** and **fr
 
 ### Overview of Deployment Steps
 
-1. **Deploy the Backend** using AWS CDK.
-2. **Configure Environment Variables** using the output from the backend deployment.
-3. **Deploy the Frontend** to AWS S3 + CloudFront.
+1. **Set up the Python environment** for the backend.
+2. **Deploy the Backend** using AWS CDK.
+3. **Configure Environment Variables** using the output from the backend deployment.
+4. **Deploy the Frontend** to AWS S3 + CloudFront.
 
 ---
 
-## 1. Deploying the Backend
+## 1. Set up the Python Environment
+
+Before deploying the backend, you need to set up a Python environment using Conda. Follow these steps:
+
+### Installing Conda
+
+If you don't have Conda installed, you can follow these steps to install it:
+
+1. **Download and install Miniconda** (a minimal Conda installer):
+   - Go to the [Miniconda download page](https://docs.conda.io/en/latest/miniconda.html).
+   - Download the appropriate version for your system (e.g., Miniconda3 for Linux, macOS, or Windows).
+   - Follow the instructions on the page to install Miniconda.
+
+2. **Verify Conda installation**:  
+   After installation, open your terminal and verify that Conda is installed by running:  
+   `conda --version`
+
+   This should return the version of Conda you have installed.
+
+### Setting up the Python environment
+
+Once Conda is installed, follow these steps to set up the Python environment:
+
+```bash
+conda create -n infrastructure python=3.12
+conda activate infrastructure
+cd ./infrastructure
+pip install -r requirements.txt
+```
+
+## 2. Deploying the Backend
 
 Run the following commands to deploy the backend infrastructure:
 
@@ -168,7 +208,7 @@ ArniaNicknameModerationBackendStack.userPoolClientId = dnboeaj82649jo3hs028grjl4
 ArniaNicknameModerationBackendStack.userPoolId = eu-west-1_Pgq8zS6v3
 ```
 
-## 2. Configuring Environment Variables for the Web App
+## 3. Configuring Environment Variables for the Web App
 
 After deploying the backend, you need to configure the frontend environment variables using the outputs from the previous step.
 
@@ -189,7 +229,7 @@ VITE_AWS_REGION=eu-west-1
 
 Make sure to replace the values with your actual outputs from Step 1.
 
-## 3. Deploying the Frontend
+## 4. Deploying the Frontend
 
 **Note**:
 Ensure you have React and Vite installed in your local environment before proceeding with the build and deployment.
