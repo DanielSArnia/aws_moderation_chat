@@ -6,9 +6,10 @@
 2. [Key Features](#key-features)
 3. [Purpose](#purpose)
 4. [Technology Stack](#technology-stack)
-5. [Prerequisites](#prerequisites)
-6. [Deploying the Application](#deploying-the-application)
-7. [Future refinements](#future-refinements)
+5. [Application Flow](#application-flow)
+6. [Prerequisites](#prerequisites)
+7. [Deploying the Application](#deploying-the-application)
+8. [Future refinements](#future-refinements)
 
 ## Overview
 This application is designed to **generate** and **validate** nicknames for a **child-based platform**, ensuring they are creative, appropriate, and compliant with global regulations. The system leverages **Large Language Models (LLMs)** to both create and evaluate nicknames while strictly adhering to **COPPA**, **GDPR**, and other relevant data privacy and child protection laws.
@@ -57,6 +58,79 @@ The goal of this application is to provide a **safe and fun user experience** by
 
 - **Infrastructure & Deployment**:  
   - Infrastructure-as-Code (IaC) with AWS CDK 
+
+## Application flow
+
+The following section describes the flow of application
+
+![Login page](./assets/login_page.png)
+
+### Security 
+
+The website first redirects you to the login page
+
+
+To access the main content of the website, you need to do the following:
+
+1. Sign up
+2. Confirm your email by copying the code and using the confirm email page on the website
+3. Login
+
+After you login you will be able to access all the features that the website provides
+
+### Simple validation
+
+Simple validation is the most basic feature.
+
+
+![Simple validation page](./assets/simple_validation.png)
+
+You can choose a nickname to validate with an LLM call. Behind the scenes the api call of `validate-nickname` is called, which is called in various places of the application.
+
+When you check nickname, the api either outputs a cached nickname from dynamoDB or it will make the a call to AWS Bedrock to generate the nickname validation:
+
+
+![Simple validation output page](./assets/simple_validation_output.png)
+
+Or you can view all the data the model has generated, which shows which areas he considered:
+
+![Simple validation full output page](./assets/simple_validation_full_output.png)
+
+### Advanced validation
+
+This is very similar as the [Simple validation](#simple-validation) but you are required to also give 2 extra arguments:
+
+1. **age range**: the model would consider how good the name is for the specific age range
+2. **region**: the model uses this to consider specifical country regional regulations based on its knowledge base
+
+![Advanced validation page](./assets/advanced_validation.png)
+
+### Generate nickname
+
+The generate nickname page let's you generate nicknames based on the following:
+
+1. Generations preferences:
+    1. **interests**
+    2. **age range**
+    3. **themes**
+
+2. **region**: When generating names considers the regional regulations
+
+![Generate nickname page](./assets/generate_nickname.png)
+
+Here a different api is called to call an LLM to generate the nicknames and also do a small validation on them to make sure they are following the regulations.
+
+![Generate nickname page output](./assets/generate_nickname_output.png)
+
+Each of the generated nickname can be chosen to be checked by the main validation pipeline.
+
+![Generate nickname page advanced check output](./assets/generate_nickname_advanced_checked.png)
+
+We let our generation model to output names that it considers invalid so they can be check with our main validation pipeline:
+
+![Generate nickname page valid invalid output](./assets/generate_nickname_valid_invalid.png)
+
+This concludes the features that the web application has.
 
 ## Prerequisites
 
