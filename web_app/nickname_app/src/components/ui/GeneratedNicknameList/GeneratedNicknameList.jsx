@@ -1,9 +1,12 @@
 // src/components/ui/NicknameList.jsx
 import React, { useState } from 'react';
 import './GeneratedNicknameList.css'; // import the CSS file
+import Popup from '../PopUp/PopUp';
 
 const GeneratedNicknameList = ({ nicknames }) => {
   const [loadingStates, setLoadingStates] = useState({});
+  const [validationStates, setValidationStates] = useState({});
+  const [responseData, setResponseData] = useState({});
   const [validationMessage, setValidationMessage] = useState('');
   const [isValid, setIsValid] = useState(false);
 
@@ -25,29 +28,35 @@ const GeneratedNicknameList = ({ nicknames }) => {
         if (response.ok) {
           const data = await response.json();
           const processed_data = data['result'];
-          console.log(processed_data);
+          console.log();
+          setResponseData((prevState) => ({ ...prevState, [nickname]: processed_data }));
           const responseIsValid = processed_data.overall_result.valid ? 'valid' : 'invalid';
           if (responseIsValid == 'valid') {
+            setValidationStates((prevState) => ({ ...prevState, [nickname]: true }));
             setIsValid(true)
           }
           else {
             setIsValid(false)
+            setValidationStates((prevState) => ({ ...prevState, [nickname]: false }));
           }
           setValidationMessage(`The nickname "${nickname}" is ${responseIsValid}. ${processed_data.overall_result.decision_explanation}`);
         } else {
           const errorData = await response.json();
           setIsValid(false)
           setValidationMessage(errorData['error']);
+          setValidationStates((prevState) => ({ ...prevState, [nickname]: false }));
         }
       } catch (error) {
         console.error('Error:', error);
         setIsValid(false)
+        setValidationStates((prevState) => ({ ...prevState, [nickname]: false }));
         setValidationMessage('Failed to check nickname. Please try again later.');
       } finally {
         setLoadingStates((prevState) => ({ ...prevState, [nickname]: false }));
       }
     } else {
       setIsValid(false)
+      setValidationStates((prevState) => ({ ...prevState, [nickname]: false }));
       setValidationMessage('Please enter a nickname.');
     }
   };
@@ -85,7 +94,7 @@ const GeneratedNicknameList = ({ nicknames }) => {
                 <strong>Inspiration:</strong> {nicknameObj.inspiration}
               </p>
               <p className="nickname-info">
-                <strong>LEGO Theme:</strong> {nicknameObj.theme_connection}
+                <strong>Theme:</strong> {nicknameObj.theme_connection}
               </p>
               <button
                 className="choose-button"
@@ -94,6 +103,20 @@ const GeneratedNicknameList = ({ nicknames }) => {
               >
                 {loadingStates[nicknameObj.nickname] ? 'Final checks...' : 'Choose'}
               </button>
+              {validationStates[nicknameObj.nickname] && (
+                <>
+                  <span
+                    style={{ marginTop: '10px' }}
+                    className={`nickname-validation ${
+                      nicknameObj.passes_validation ? 'valid-badge' : 'invalid-badge'
+                    }`}
+                  >
+                    {nicknameObj.passes_validation ? 'Final Check: Valid' : 'Final Check: Invalid'}
+                  </span>
+                  <Popup data={responseData[nicknameObj.nickname]} />
+                </>
+              )
+              }
             </div>
           ))}
         </div>

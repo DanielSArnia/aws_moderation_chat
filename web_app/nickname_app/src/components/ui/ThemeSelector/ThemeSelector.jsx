@@ -1,10 +1,10 @@
-// src/components/LegoThemeSelector.jsx
+// src/components/ThemeSelector.jsx
 import React from 'react';
 import "./ThemeSelector.css"
 
 const ThemeSelector = ({ selectedThemes, onSelectTheme }) => {
   const themes = [
-    'LEGO City',
+    'City',
     'Ninjago',
     'Minecraft',
     'Friends',
@@ -21,8 +21,8 @@ const ThemeSelector = ({ selectedThemes, onSelectTheme }) => {
   };
 
   return (
-    <div className="lego-theme-selector">
-      <h3>Select LEGO Themes:</h3>
+    <div className="theme-selector">
+      <h3>Select Themes:</h3>
       <div className="theme-buttons">
         {themes.map((theme, index) => (
           <button

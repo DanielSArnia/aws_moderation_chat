@@ -47,7 +47,7 @@ function GenerateNickname() {
             interests:interests, 
             region_code:region, 
             age_range:ageRange,
-            lego_themes:selectedThemes
+            themes:selectedThemes
           }),
         });
         if (response.ok) {

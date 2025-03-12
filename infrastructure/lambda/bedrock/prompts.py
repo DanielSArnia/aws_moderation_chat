@@ -1,5 +1,5 @@
 system_string = (
-    "You are evaluating a child's nickname for the LEGO platform.\n",
+    "You are evaluating a child's nickname for a child platform.\n",
     "Your task is to analyze this nickname against corporate guidelines, safety policies, and regulations.\n"
     "Provide a structured JSON response with detailed scores and explanations."
 )
@@ -8,14 +8,14 @@ input_template = (
     "Evaluate the following nickname:\n",
     "\n",
     "Nickname: \"{nickname}\"\n",
-    "Platform: LEGO Kids Community\n",
+    "Platform: Kids Community\n",
     "User Age Range: {age_range}\n",
     "Region: {region_code}\n",
     "\n",
     "Provide a detailed analysis covering:\n",
     "1. Inappropriate Content: Detect profanity, adult themes, violence, bullying, drugs, or other inappropriate content (even in coded language or slang)\n",
     "2. Personal Information: Identify potential PII including names, locations, ages, schools, or anything that could identify a child\n",
-    "3. Brand Alignment: Assess if the nickname aligns with LEGO's positive, creative, family-friendly brand values\n",
+    "3. Brand Alignment: Assess if the nickname aligns with a child platform's positive, creative, family-friendly brand values\n",
     "4. Age Appropriateness: Determine if the nickname is suitable for all users in a children's platform\n",
     "5. Regional Compliance: Check for region-specific concerns relating to COPPA, GDPR, or other relevant regulations\n",
     "\n",

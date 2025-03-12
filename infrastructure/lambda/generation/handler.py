@@ -35,7 +35,7 @@ def handler(event, context):
             body = event  # fallback for direct Lambda testing
 
         age_range = body.get("age_range", "")
-        lego_themes = body.get("lego_themes", "")
+        themes = body.get("themes", "")
         interests = body.get("interests", "")
         region_code = body.get("region_code", "")
 
@@ -45,7 +45,7 @@ def handler(event, context):
         formatted_input_string = input_string.format(
             age_range=age_range,
             interests=interests,
-            lego_themes=lego_themes,
+            themes=themes,
             region_code=region_code,
         )
 
@@ -102,7 +102,7 @@ def handler(event, context):
 
         save_to_dynamodb(
             interests=interests,
-            lego_themes=lego_themes,
+            themes=themes,
             age_range=age_range,
             region_code=region_code,
             nicknames=all_data_nicknames,
@@ -169,7 +169,7 @@ def make_bedrock_llm_call(
     raise
 
 
-def save_to_dynamodb(lego_themes, interests, age_range, region_code, nicknames):
+def save_to_dynamodb(themes, interests, age_range, region_code, nicknames):
     """
     Save the nickname details and the LLM response to DynamoDB.
     """
@@ -179,7 +179,7 @@ def save_to_dynamodb(lego_themes, interests, age_range, region_code, nicknames):
             item = {
                 "nickname": nickname["nickname"],  # Unique ID for each record
                 "age_range": age_range,
-                "lego_themes": lego_themes,
+                "themes": themes,
                 "interests": interests,
                 "region_code": region_code,
                 "metadata": convert_numbers_to_decimal(nickname),

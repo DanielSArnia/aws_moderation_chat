@@ -1,6 +1,6 @@
 system_string = (
-    "You are a creative nickname generator for the LEGO platform.\n",
-    "Your task is to create fun, appropriate, child-friendly nicknames that align with LEGO's brand values and comply with all safety regulations for children's platforms."
+    "You are a creative nickname generator for a child platform.\n",
+    "Your task is to create fun, appropriate, child-friendly nicknames that align with the child platform's brand values and comply with all safety regulations for children's platforms."
 )
 
 input_template = (
@@ -8,15 +8,15 @@ input_template = (
     "\n",
     "User Age: {age_range}\n",
     "User Interests: {interests} (e.g., \"space, dinosaurs, pirates\")\n",
-    "LEGO Themes They Like: {lego_themes} (e.g., \"LEGO City, LEGO Star Wars\")\n",
+    "Themes They Like: {themes} (e.g., \"City, Star Wars\")\n",
     "Region: {region_code}\n",
     "\n",
     "Requirements:\n",
     "1. Each nickname must be child-appropriate and safe\n",
     "2. Length between 3-15 characters\n",
     "3. No personal information\n",
-    "4. Align with LEGO's creative, positive brand\n",
-    "5. Incorporate elements from their interests or favorite LEGO themes\n",
+    "4. Align with the child platform's creative, positive brand\n",
+    "5. Incorporate elements from their interests or favorite themes\n",
     "6. Be unique and memorable\n",
     "7. Include a brief explanation of each nickname's inspiration\n",
     "\n",
@@ -26,7 +26,7 @@ input_template = (
     "    {{\n",
     "      \"nickname\": \"<nickname_1>\",\n",
     "      \"inspiration\": \"<brief explanation>\",\n",
-    "      \"theme_connection\": \"<related LEGO theme>\"\n",
+    "      \"theme_connection\": \"<related theme>\"\n",
     "    }},\n",
     "    ...\n",
     "  ]\n",
@@ -34,11 +34,11 @@ input_template = (
 )
 
 system_string_batch_verification = (
-    "You are evaluating a batch of generated nicknames for the LEGO platform against safety and compliance guidelines."
+    "You are evaluating a batch of generated nicknames for the child platform platform against safety and compliance guidelines."
 )
 
 input_template_batch_verification = (
-    "Review the following batch of generated nicknames for a children's LEGO platform:\n",
+    "Review the following batch of generated nicknames for a children's platform:\n",
     "\n",
     "Nicknames: {nicknames}\n",
     "User Age Range: {age_range}\n",
@@ -47,7 +47,7 @@ input_template_batch_verification = (
     "For each nickname, determine if it passes all validation checks:\n",
     "1. Free of inappropriate content\n",
     "2. Contains no personal information\n",
-    "3. Aligns with LEGO's brand values\n",
+    "3. Aligns with a child platform's brand values\n",
     "4. Age-appropriate\n",
     "5. Complies with regional regulations\n",
     "\n",
@@ -120,14 +120,14 @@ tool_list_generate = [
     {
         "toolSpec": {
             "name": "generate_nicknames",
-            "description": "Generate a list of nicknames based on LEGO themes.",
+            "description": "Generate a list of nicknames based on themes.",
             "inputSchema": {
                 "json": {
                     "type": "object",
                     "properties": {
                         "nicknames": {
                             "type": "array",
-                            "description": "A list of nicknames generated based on LEGO themes.",
+                            "description": "A list of nicknames generated based on themes.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -141,7 +141,7 @@ tool_list_generate = [
                                     },
                                     "theme_connection": {
                                         "type": "string",
-                                        "description": "The LEGO theme related to the nickname.",
+                                        "description": "The theme related to the nickname.",
                                     },
                                 },
                                 "required": [
