@@ -6,20 +6,20 @@ This application is designed to **generate** and **validate** nicknames for a **
 ![Project Diagram](assets/project_diagram.png)
 
 ## Key Features
-- 🚀 **Nickname Generation**  
+- **Nickname Generation**  
   Uses LLMs to create fun, safe, and engaging nicknames suitable for users of all ages, particularly children.
 
-- 🛡️ **Validation Engine**  
+- **Validation Engine**  
   - Validates **user-submitted nicknames**.  
   - Validates **LLM-generated nicknames**.  
   - Ensures compliance with LEGO’s platform guidelines, including restrictions on language, personal information, and appropriateness.
 
-- ⚖️ **Regulatory Compliance**  
+- **Regulatory Compliance**  
   - Adheres to **COPPA** (Children's Online Privacy Protection Act) regulations to protect children’s privacy.  
   - Complies with **GDPR** (General Data Protection Regulation) standards for data privacy and security.  
   - Filters out any personally identifiable information (PII), offensive language, or inappropriate content.
 
-- ⚙️ **Customizable Ruleset**  
+- **Customizable Ruleset**  
   Validation logic can be adjusted to fit additional platform guidelines or regional compliance requirements.
 
 ## Purpose
@@ -48,13 +48,15 @@ The goal of this application is to provide a **safe and fun user experience** by
 - **Infrastructure & Deployment**:  
   - Infrastructure-as-Code (IaC) with AWS CDK 
 
-## Prerequirements
+## Prerequisites
 
-### AWS CLI and CDK:
+### AWS CLI and CDK
 
-Install both AWS CLI and AWS CDK:
+First, install both the AWS CLI and AWS CDK:
 
-AWS CLI is installed manually from a zip file:
+#### Installing AWS CLI
+
+You can install AWS CLI manually by downloading and unzipping the installation file:
 
 ```bash
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -62,55 +64,101 @@ unzip awscliv2.zip
 sudo ./aws/install
 ```
 
-AWS CDK we use npm global package installing
+#### Installing AWS CDK
+
+AWS CDK is installed using npm as a global package:
+
+Make sure you have npm installed: [Installing nodejs](#installing-nodejs-and-packages)
 
 ```bash
 npm install -g aws-cdk
 ```
 
-We also have to configure the security credentials for AWS CLI (AWS CDK will inherit the credentials of the AWS CLI)
+#### Configuring AWS CLI
 
-https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
+Once the AWS CLI is installed, configure the security credentials. The AWS CDK will inherit these credentials from the AWS CLI.
 
-To setup AWS CLI you have to run aws configure and then provide your credentials which we recommend you use short term credentials with IAM Identity Center
+For instructions on setting up the AWS CLI, refer to the [AWS CLI User Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html).
 
-My setup has the following:
+To configure the AWS CLI, run:
+
+```bash
+aws configure
 ```
-cdk==2.1003.0 (build b242c23)
-aws-cli==2.24.19
-python==3.12.9
-```
 
-### For web we will need React + vite
+Then, provide your credentials. It is recommended to use short-term credentials with IAM Identity Center for enhanced security.
 
-TODO: complete here
+#### My Setup
 
-## Deploying the applications
+For reference, my setup includes the following versions:
 
-This step is very important and it entails the following steps
+- `cdk --version` output: `cdk==2.1003.0 (build b242c23)`
+- `aws --version` output: `aws-cli/2.24.19 Python/3.12.9 Linux/6.8.0-52-generic exe/x86_64.ubuntu.22`
 
-1. Run the cdk deployment for the backend side of the application
+### Frontend: React + Vite
 
-2. Set any variables required by the output of the previous step into the .env of the web app
+For the frontend, you will need **React** and **Vite**.
 
-3. Deploy the frontend side (the website)
+#### Installing Node.js and Packages
 
-### 1. Deploying the backend
+To set up the frontend, follow these steps:
 
-Run the following commands to deploy the backend:
+1. **Install Node.js**:  
+   You need Node.js to run React and Vite. You can install the latest version of Node.js from [the official Node.js website](https://nodejs.org/), or use a package manager like `nvm` (Node Version Manager) to manage versions.
 
-Before we do this, make sure you see the output of the deploy, we need to take some variables and place then in the .env in the following step
+   - To install `nvm` (optional, but recommended), run the following command in your terminal:  
+     `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash`  
+     After installation, restart your terminal and then install the latest version of Node.js by running:  
+     `nvm install node`
+
+   - Alternatively, you can install Node.js directly from the official website.
+
+2. **Navigate to the Frontend Folder**:  
+   Change your directory to the `nickname-app` folder inside the `web` directory:  
+   `cd web/nickname-app`
+
+3. **Install Dependencies**:  
+   Install the necessary packages, including React and Vite, by running:  
+   `npm install`
+
+   This command will install the dependencies listed in the `package.json` file.
+
+4. **Check that everything is setup properly**:  
+   After the installation is complete, check the project is bulding:  
+   `npm run build`
+
+#### Additional Notes
+
+- Make sure you have the required versions of Node.js and npm for compatibility with React and Vite.
+- If you encounter any issues with dependencies or installation, try deleting the `node_modules` folder and the `package-lock.json` file, and then run `npm install` again.
+
+## Deploying the Application
+
+This section outlines the steps required to deploy both the **backend** and **frontend** components of the application.
+
+---
+
+### Overview of Deployment Steps
+
+1. **Deploy the Backend** using AWS CDK.
+2. **Configure Environment Variables** using the output from the backend deployment.
+3. **Deploy the Frontend** to AWS S3 + CloudFront.
+
+---
+
+## 1. Deploying the Backend
+
+Run the following commands to deploy the backend infrastructure:
 
 ```bash
 cd infrastructure
 cdk deploy ArniaNicknameModerationBackendStack
 ```
 
-### 2. Setting .env variables for web
+**Important**:
+Once the deployment is complete, save the output values, as they will be needed in the next step to configure the frontend.
 
-You have to take the corresponding URL variables and fill all the .env variables that can be found at `web_app/nickname_app/.env`
-
-Given the following outputs:
+Example CDK Output:
 
 ```
 Outputs:
@@ -120,22 +168,47 @@ ArniaNicknameModerationBackendStack.userPoolClientId = dnboeaj82649jo3hs028grjl4
 ArniaNicknameModerationBackendStack.userPoolId = eu-west-1_Pgq8zS6v3
 ```
 
-Example of .env file with filled out variables:
+## 2. Configuring Environment Variables for the Web App
 
+After deploying the backend, you need to configure the frontend environment variables using the outputs from the previous step.
+
+Edit the .env file located at:
+
+```bash
+web_app/nickname_app/.env
 ```
+
+Example .env file:
+
+```dotenv
 VITE_BEDROCK_API_URL=https://m8aenb09e8.execute-api.eu-west-1.amazonaws.com/prod/
 VITE_USER_POOL_ID=eu-west-1_Pgq8zS6v3
 VITE_USER_POOL_CLIENT_ID=dnboeaj82649jo3hs028grjl4
 VITE_AWS_REGION=eu-west-1
 ```
 
-### 3. Deploying the website
+Make sure to replace the values with your actual outputs from Step 1.
 
-Note: This step requires to have the React + Vite installed
+## 3. Deploying the Frontend
 
-For this final step we need to just run the cdk build for the web.
+**Note**:
+Ensure you have React and Vite installed in your local environment before proceeding with the build and deployment.
+
+Run the following command to deploy the frontend stack:
 
 ```bash
 cd infrastructure
 cdk deploy ArniaNicknameModerationFrontendStack
 ```
+
+After deployment, your website will be hosted on AWS S3 and served through CloudFront. The CloudFront URL will be provided as part of the CDK output.
+
+## Deployment Complete
+
+Your application is now fully deployed and ready to use!
+
+If you encounter any issues:
+
+- Verify the `.env` variables are correctly set in the frontend.
+- Check the AWS CloudFormation console for the status of your stacks.
+- Review the CDK deployment logs for any errors.
