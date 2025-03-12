@@ -336,21 +336,11 @@ While the current system is functional, there are several areas where improvemen
 
 To improve the accuracy and safety of nickname validation, adding an **embeddings distance** verification step could be beneficial. By storing a list of previously flagged or bad names in **DynamoDB**, we can compare new nicknames to these stored entries using embeddings distance. This would allow the system to detect nicknames that are semantically similar to inappropriate names, even if they are not exact matches.
 
-**Implementation Steps:**
-- Store problematic nicknames in DynamoDB, alongside their embeddings generated using a pre-trained model.
-- For each new nickname submitted for validation, compute its embedding and compare it with embeddings in the DynamoDB database.
-- Use a threshold distance metric (e.g., cosine similarity) to determine whether the new nickname is too similar to any flagged nickname.
-
 ### 2. **Specialized Prompts for High-Risk Nicknames**
 
 For certain edge cases, especially when the nickname is deemed "high-risk" but still technically valid, specialized prompts can be used to evaluate the content more rigorously. This could involve tweaking the LLM's generation prompts to focus on specific concerns, such as:
 - **Potentially offensive content**: If the nickname includes certain sensitive keywords or patterns, the model can be prompted to assess if the nickname might be interpreted negatively in specific cultures or languages.
 - **Compliance checks**: If a nickname might violate certain child protection laws or privacy regulations (like GDPR or COPPA), specialized prompts can trigger additional checks or automatic rejections.
-
-**Implementation Steps:**
-- Identify high-risk patterns in the nickname.
-- Modify the LLM prompt dynamically based on the risk factors associated with the nickname (e.g., incorporating context from child protection regulations or offensive language filters).
-- If a nickname passes the initial validation but still falls within the high-risk category, the model should return a confidence score or flag for manual review.
 
 ### 3. **Enhanced Customizable Validation Rules**
 
@@ -364,29 +354,9 @@ Incorporating user feedback for problematic or false-positive cases would allow 
 
 ### 5. **Overall performance and cost optimizations**
 
-- **Lambda Cold Starts**: The code doesn't implement provisioned concurrency for Lambda functions, which could lead to cold start delays. Adding provisioned concurrency for critical functions would improve response times.
-
-- **Model Selection**: The implementation uses fixed model IDs (`eu.anthropic.claude-3-5-sonnet-20240620-v1:0` and `eu.anthropic.claude-3-haiku-20240307-v1:0`). The code could be enhanced to dynamically select models based on request complexity or latency requirements.
-
 - **Bedrock Token Usage**: The prompts could be optimized to use fewer tokens while maintaining accuracy. The current prompts include verbose instructions that contribute to token costs.
 
 - **Resource Sizing**: Lambda function memory optimization. Right-sizing Lambda functions could reduce costs while maintaining performance.
-
-### 6. **Reliability**
-
-- **Error Handling**: There is basic error handling, it could be more robust. For instance, implementing circuit breakers for Bedrock API calls would improve reliability during service degradation.
-
-- **Retry Logic**: The current retry mechanism is basic (retry 5 times with no backoff). Implementing exponential backoff with jitter would improve reliability.
-
-- **Monitoring**: There are no CloudWatch alarms or custom metrics for monitoring system health and performance.
-
-### 7. **Security**
-
-- **Input Validation**: More rigorous server-side input validation before sending data to Bedrock.
-
-- **Least Privilege**: The IAM roles for Lambda functions could be more granular. The current approach uses broad permissions (all models)
-
-- **Sensitive Data Handling**: There's no explicit handling for PII or sensitive data that might come through the application.
 
 ### 8. **Maintainability**
 
