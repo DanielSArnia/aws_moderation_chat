@@ -33,9 +33,11 @@ def handler(event, context):
 
         if "Item" in response:
             # Nickname already exists
-            print(f"Nickname '{nickname}' already exists in the table.")
+            print(f"Nickname '{nickname}' already exists in the table. Returning the respective data")
+            copied_response = deepcopy(response["Item"]["metadata"])
+            retrieved_model_data = convert_numbers_to_decimal(copied_response, invert=True)
             return build_api_response(
-                400, json.dumps({"error": f"Nickname '{nickname}' already exists."})
+                200, json.dumps({"result": retrieved_model_data})
             )
 
         # Create prompt for the model
@@ -142,13 +144,15 @@ def save_to_dynamodb(nickname, age_range, region_code, llm_response):
         raise e
 
 
-def convert_numbers_to_decimal(obj):
+def convert_numbers_to_decimal(obj, invert=False):
     if isinstance(obj, dict):
-        return {k: convert_numbers_to_decimal(v) for k, v in obj.items()}
+        return {k: convert_numbers_to_decimal(v, invert=invert) for k, v in obj.items()}
     elif isinstance(obj, list):
-        return [convert_numbers_to_decimal(elem) for elem in obj]
-    elif isinstance(obj, float):
+        return [convert_numbers_to_decimal(elem, invert=invert) for elem in obj]
+    elif not invert and isinstance(obj, float):
         return Decimal(str(obj))  # Convert float to Decimal
+    elif invert and isinstance(obj, Decimal):
+        return float(obj)
     else:
         return obj
 
