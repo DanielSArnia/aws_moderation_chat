@@ -14,7 +14,7 @@ const SignUpPage = () => {
     try {
       await signUp(email, email ,password ,{email});
       alert("Sign Up successful! Please check your email for confirmation.");
-      navigate('/login', { state: { email } });
+      navigate('/confirm-signup', { state: { email } });
     } catch (error) {
       setError(error.message);
     }
