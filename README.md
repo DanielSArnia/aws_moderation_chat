@@ -356,10 +356,18 @@ Incorporating user feedback for problematic or false-positive cases would allow 
 
 - **Bedrock Token Usage**: The prompts could be optimized to use fewer tokens while maintaining accuracy. The current prompts include verbose instructions that contribute to token costs.
 
-- **Resource Sizing**: Lambda function memory optimization. Right-sizing Lambda functions could reduce costs while maintaining performance.
+- **Restrict Bedrock Models**: Restrict the access to only specific bedrock models and optimize model choice based on request and usage.
+
+- **Resource Sizing**: Lambda function memory optimization. Right-sizing Lambda functions and reducing timeout could reduce costs while maintaining performance.
+
+- **Cold Starts**: Implement provisioned concurrency for critical functions
+
+- **SSM parameters**: Use SSM to pass information between stacks. Overall security for any secret parameters needed.
 
 ### 6. **Maintainability**
 
 - **Testing**: No automated tests for the Lambda functions or frontend components.
 
 - **CI/CD Pipeline**: No CI/CD pipeline is implemented for automated deployment and testing.
+
+- **CloudWatch**: More logging and dashboards can be added for better monitoring. Also cost monitoring, budgets and analysis.
